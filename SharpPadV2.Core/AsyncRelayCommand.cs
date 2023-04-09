@@ -43,14 +43,16 @@ namespace SharpPadV2.Core {
                 return;
             }
 
+            this.RaiseCanExecuteChanged();
+
             try {
-                this.RaiseCanExecuteChanged();
                 await this.execute();
             }
             finally {
                 this.isRunningState = 0;
-                this.RaiseCanExecuteChanged();
             }
+
+            this.RaiseCanExecuteChanged();
         }
     }
 
@@ -92,14 +94,16 @@ namespace SharpPadV2.Core {
                 parameter = GetConvertedParameter<T>(parameter);
             }
 
+            this.RaiseCanExecuteChanged();
+
             try {
-                this.RaiseCanExecuteChanged();
                 await this.execute((T) parameter);
             }
             finally {
                 this.isRunningState = 0;
-                this.RaiseCanExecuteChanged();
             }
+
+            this.RaiseCanExecuteChanged();
         }
     }
 }

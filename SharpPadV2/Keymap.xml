@@ -2,35 +2,38 @@
 <KeyMap>
     <Group Name="Application">
         <Group Name="TextEditor">
-            <Shortcut Name="OpenFileAction" ActionID="actions.editor.OpenFileAction">
+            <Shortcut Name="OpenFileShortcut" ActionID="actions.editor.OpenFileAction">
                 <Keystroke Mods="CTRL" Key="O"/>
             </Shortcut>
-            <Shortcut Name="SaveFileAction" ActionID="actions.editor.SaveFileAction">
+            <Shortcut Name="SaveFileShortcut" ActionID="actions.editor.SaveFileAction">
                 <Keystroke Mods="CTRL" Key="S"/>
             </Shortcut>
-            <Shortcut Name="SaveFileAsAction" ActionID="actions.editor.SaveFileAsAction">
+            <Shortcut Name="SaveFileAsShortcut" ActionID="actions.editor.SaveFileAsAction">
                 <Keystroke Mods="CTRL+SHIFT" Key="S"/>
             </Shortcut>
-            <Shortcut Name="UndoAction" ActionID="actions.editor.UndoAction">
+            <Shortcut Name="UndoShortcut" ActionID="actions.editor.UndoAction">
                 <Keystroke Mods="CTRL" Key="Z"/>
             </Shortcut>
-            <Shortcut Name="RedoAction" ActionID="actions.editor.RedoAction">
+            <Shortcut Name="RedoShortcut" ActionID="actions.editor.RedoAction">
                 <Keystroke Mods="CTRL" Key="Y"/>
             </Shortcut>
-            <Shortcut Name="RedoAction2nd" ActionID="actions.editor.RedoAction2nd">
+            <Shortcut Name="RedoShortcut2nd" ActionID="actions.editor.RedoAction2nd">
                 <Keystroke Mods="CTRL+SHIFT" Key="Z"/>
             </Shortcut>
-            <Shortcut Name="CutAction" DisplayName="Cut the selected text to the clipboard" ActionID="actions.editor.CutAction">
+            <Shortcut Name="CutShortcut" DisplayName="Cut the selected text to the clipboard" ActionID="actions.editor.CutAction">
                 <Keystroke Mods="CTRL" Key="X"/>
             </Shortcut>
-            <Shortcut Name="CopyAction" DisplayName="Copy the selected text to the clipboard" ActionID="actions.editor.CopyAction">
+            <Shortcut Name="CopyShortcut" DisplayName="Copy the selected text to the clipboard" ActionID="actions.editor.CopyAction">
                 <Keystroke Mods="CTRL" Key="C"/>
             </Shortcut>
-            <Shortcut Name="PasteAction" DisplayName="Paste your clipboard at the caret/cursor" ActionID="actions.editor.PasteAction">
+            <Shortcut Name="PasteShortcut" DisplayName="Paste your clipboard at the caret/cursor" ActionID="actions.editor.PasteAction">
                 <Keystroke Mods="CTRL" Key="V"/>
             </Shortcut>
-            <Shortcut Name="DeleteSelectionAction" DisplayName="Delete the selection that you have" ActionID="actions.editor.DeleteSelectionAction">
+            <Shortcut Name="DeleteSelectionShortcut" DisplayName="Delete the selection that you have" ActionID="actions.editor.DeleteSelectionAction">
                 <Keystroke Key="Delete"/>
+            </Shortcut>
+            <Shortcut Name="SelectLineShortcut" DisplayName="Selects the current line" ActionID="actions.editor.SelectLineAction">
+                <Keystroke Mods="CTRL+SHIFT" Key="A"/>
             </Shortcut>
         </Group>
     </Group>

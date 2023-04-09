@@ -10,28 +10,104 @@
         xmlns:acs="clr-namespace:SharpPadV2.AdvancedContextService"
         xmlns:focus="clr-namespace:SharpPadV2.Shortcuts"
         xmlns:sc="clr-namespace:SharpPadV2.Shortcuts.Bindings"
+        xmlns:i="clr-namespace:SharpPadV2.Interactivity"
         mc:Ignorable="d"
-        Title="MainWindow" Height="576" Width="720"
+        Title="MainWindow" Height="576" Width="620"
         Style="{StaticResource CustomWindowStyleEx}" 
         Background="{DynamicResource AREghZyBrush.Primary.2.Background.Static}"
         TitlebarBrush="{DynamicResource AREghZyBrush.Primary.2.Background.Static}"
         d:DataContext="{d:DesignInstance local:MainViewModel}"
         focus:UIFocusGroup.IsGlobalShortcutFocusTarget="True"
-        BorderBrush="DodgerBlue">
+        BorderBrush="{DynamicResource AREghZyBrush.ColourfulGlyph.MouseOver}">
     <Grid>
         <Menu VerticalAlignment="Top">
             <MenuItem Header="File">
-                <MenuItem Header="New" IsEnabled="False"/>
-                <MenuItem Header="Open file" Command="{Binding CurrentTextEditor.OpenFileCommand, Mode=OneTime}"/>
-                <MenuItem Header="Save" Command="{Binding CurrentTextEditor.SaveFileCommand, Mode=OneTime}"/>
-                <MenuItem Header="Save as..." Command="{Binding CurrentTextEditor.SaveFileAsCommand, Mode=OneTime}"/>
+                <MenuItem Header="New" Command="{Binding NewEmptyFileCommand, Mode=OneTime}"/>
+                <MenuItem Header="Open file" Command="{Binding OpenFileCommand, Mode=OneTime}"/>
+                <MenuItem Header="Save" Command="{Binding ActiveTextEditor.SaveFileCommand}"/>
+                <MenuItem Header="Save as..." Command="{Binding ActiveTextEditor.SaveFileAsCommand}"/>
             </MenuItem>
             <MenuItem Header="Edit"/>
         </Menu>
-        <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource AREghZyBrush.Primary.1.Border.Static}" Margin="0,18,0,0">
+        <Border Margin="0,18,0,0">
             <DockPanel>
-                <Border Height="23" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
-                    <Grid DataContext="{Binding CurrentTextEditor, UpdateSourceTrigger=PropertyChanged}">
+                <TabControl ItemsSource="{Binding Editors, Mode=OneTime}" SelectedItem="{Binding ActiveTextEditor, UpdateSourceTrigger=PropertyChanged}" 
+                            Background="{DynamicResource AREghZyBrush.ColourfulGlyph.MouseOver}" 
+                            DockPanel.Dock="Top" Height="25" BorderThickness="0 1 0 0"
+                            i:FileDropAttachments.FileDropNotifier="{Binding}">
+                    <TabControl.ItemContainerStyle>
+                        <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
+                            <Setter Property="Padding" Value="4,2,4,0"/>
+                            <Setter Property="HeaderTemplate">
+                                <Setter.Value>
+                                    <DataTemplate DataType="{x:Type t:TextEditorViewModel}">
+                                        <Grid Background="Transparent">
+                                            <Grid.InputBindings>
+                                                <MouseBinding MouseAction="MiddleClick" Command="{Binding CloseSelfCommand, Mode=OneTime}"/>
+                                            </Grid.InputBindings>
+                                            <TextBlock Text="{Binding EditorName, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" Margin="0 0 23 0"/>
+                                            <Button Background="Transparent" BorderBrush="Transparent" BorderThickness="0" 
+                                                    HorizontalAlignment="Right" Width="20" VerticalAlignment="Stretch"
+                                                    Content="X" Command="{Binding CloseSelfCommand, Mode=OneTime}"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type TabItem}">
+                                        <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
+                                            <Border x:Name="mainBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,1,1,0" Background="{TemplateBinding Background}" Margin="0">
+                                                <Border x:Name="innerBorder" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,1,1,0" Background="{Binding Background, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TabControl}}}" Margin="-1" Opacity="0" />
+                                            </Border>
+                                            <ContentPresenter x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" />
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" TargetName="mainBorder" Value="{DynamicResource TabItem.MouseOver.Background}" />
+                                                <Setter Property="BorderBrush" TargetName="mainBorder" Value="{DynamicResource TabItem.MouseOver.Border}" />
+                                                <Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0" />
+                                                <Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0" />
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Opacity" TargetName="contentPresenter" Value="0.56" />
+                                                <Setter Property="Background" TargetName="mainBorder" Value="{DynamicResource TabItem.Disabled.Background}" />
+                                                <Setter Property="BorderBrush" TargetName="mainBorder" Value="{DynamicResource TabItem.Disabled.Border}" />
+                                                <Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0" />
+                                                <Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0" />
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="false" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0" />
+                                                <Setter Property="BorderThickness" TargetName="mainBorder" Value="1,1,1,0" />
+                                            </MultiDataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Panel.ZIndex" Value="1" />
+                                                <Setter Property="Margin" Value="-2,-2,-2,0" />
+                                                <Setter Property="Opacity" TargetName="innerBorder" Value="1" />
+                                                <Setter Property="BorderThickness" TargetName="innerBorder" Value="1,1,1,0" />
+                                                <Setter Property="BorderThickness" TargetName="mainBorder" Value="0,1,1,0" />
+                                            </MultiDataTrigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TabControl.ItemContainerStyle>
+                </TabControl>
+                <Border DataContext="{Binding ActiveTextEditor, UpdateSourceTrigger=PropertyChanged}" Height="23" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="65*"/>
                             <ColumnDefinition Width="80"/>
@@ -46,19 +122,28 @@
                         <TextBlock Text="{Binding FilePath}" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0"/>
                     </Grid>
                 </Border>
-                <t:RZTextEditor DataContext="{Binding CurrentTextEditor, UpdateSourceTrigger=PropertyChanged}"
-                                Background="{DynamicResource AREghZyBrush.Deep.2.Background.Static}"
-                                BorderBrush="Transparent"
-                                BorderThickness="0"
-                                VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible"
-                                x:Name="MainTextEditor"
-                                acs:AdvancedContextMenu.ContextProvider="{Binding}"
-                                focus:UIFocusGroup.FocusGroupPath="Application/TextEditor"
-                                focus:UIFocusGroup.UsePreviewEvents="True" OutlineBorderThickness="2" OutlineBorderBrush="#4C5B5B5B">
-                    <FlowDocument LineHeight="{Binding LineHeight, UpdateSourceTrigger=PropertyChanged, FallbackValue='1.2'}"
-                                  FontFamily="{Binding FontFamily, UpdateSourceTrigger=PropertyChanged, FallbackValue='Consolas'}"
-                                  FontSize="{Binding FontSize, UpdateSourceTrigger=PropertyChanged, FallbackValue='14'}"/>
-                </t:RZTextEditor>
+                <Grid IsEnabled="{Binding IsEditorVisible, UpdateSourceTrigger=PropertyChanged}">
+                    <t:RZTextEditor x:Name="MainTextEditor"
+                                    OutlineBorderThickness="2" OutlineBorderBrush="#4C5B5B5B"
+                                    Background="{DynamicResource AREghZyBrush.Deep.2.Background.Static}"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="0"
+                                    VerticalScrollBarVisibility="Visible"
+                                    HorizontalScrollBarVisibility="Visible"
+                                    DataContext="{Binding ActiveTextEditor, UpdateSourceTrigger=PropertyChanged}"
+                                    Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                                    focus:UIFocusGroup.FocusGroupPath="Application/TextEditor"
+                                    focus:UIFocusGroup.UsePreviewEvents="True"
+                                    FontFamily="{Binding FontFamily, UpdateSourceTrigger=PropertyChanged, FallbackValue='Consolas'}"
+                                    FontSize="{Binding FontSize, UpdateSourceTrigger=PropertyChanged, FallbackValue='14'}"
+                                    TextBlock.LineHeight="{Binding LineHeight, UpdateSourceTrigger=PropertyChanged, FallbackValue='21'}"
+                                    TextBlock.LineStackingStrategy="BlockLineHeight"
+                                    acs:AdvancedContextMenu.ContextProvider="{Binding}">
+                        <t:RZTextEditor.ContextMenu>
+                            <acs:AdvancedContextMenu FontFamily="Segoe UI" FontSize="12" TextBlock.LineHeight="16" TextBlock.LineStackingStrategy="MaxHeight"/>
+                        </t:RZTextEditor.ContextMenu>
+                    </t:RZTextEditor>
+                </Grid>
             </DockPanel>
         </Border>
     </Grid>

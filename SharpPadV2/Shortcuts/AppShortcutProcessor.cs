@@ -81,17 +81,21 @@ namespace SharpPadV2.Shortcuts {
         }
 
         public async void OnKeyEvent(object sender, DependencyObject focused, KeyEventArgs e, bool isRelease, bool isPreviewEvent) {
-            if (e.Handled || e.IsRepeat || !CanProcessEvent(focused, isPreviewEvent)) {
-                return;
-            }
-
-            AppShortcutProcessor processor = GetWindowProcessor(sender);
-            if (processor == null) {
+            if (e.Handled) {
                 return;
             }
 
             Key key = e.Key == Key.System ? e.SystemKey : e.Key;
             if (ShortcutUtils.IsModifierKey(key) || key == Key.DeadCharProcessed) {
+                return;
+            }
+
+            if (!CanProcessEvent(focused, isPreviewEvent)) {
+                return;
+            }
+
+            AppShortcutProcessor processor = GetWindowProcessor(sender);
+            if (processor == null) {
                 return;
             }
 

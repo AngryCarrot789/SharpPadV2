@@ -1,5 +1,11 @@
+using System;
+
 namespace SharpPadV2.Core.Interactivity {
-    public class FileDropType {
-        
+    [Flags]
+    public enum FileDropType {
+        None,
+        Copy,
+        Move,
+        All = Copy | Move
     }
 }

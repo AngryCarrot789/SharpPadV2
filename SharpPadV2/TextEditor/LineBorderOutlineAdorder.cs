@@ -47,6 +47,11 @@ namespace SharpPadV2.TextEditor {
         }
 
         protected override void OnRender(DrawingContext dc) {
+            Rect rect = this.Rectangle;
+            if (rect.IsEmpty) {
+                return;
+            }
+
             if (this.pen == null && !this.hasCheckedBorderPen) {
                 Brush brush = this.OutlineBorderBrush;
                 double thickness = this.OutlineBorderThickness;
@@ -61,18 +66,19 @@ namespace SharpPadV2.TextEditor {
             }
 
             if (this.pen != null) {
-                double thickA = pen.Thickness * 0.5;
-                double thickB = pen.Thickness;
+                double thickA = this.pen.Thickness * 0.5;
+                double thickB = this.pen.Thickness;
                 // Rect rectangle = new Rect(new Point(thick, thick), new Point(this.RenderSize.Width - thick, this.RenderSize.Height - thick));
-                Rect rect = this.Rectangle;
-                rect.X += thickA;
-                rect.Y += thickA;
-                rect.Width -= thickB;
-                rect.Height -= thickB;
-                dc.DrawRectangle(null, pen, rect);
+                if (!rect.IsEmpty) {
+                    rect.X += thickA;
+                    rect.Y += thickA;
+                    rect.Width -= thickB;
+                    rect.Height -= thickB;
+                    dc.DrawRectangle(null, this.pen, rect);
+                }
             }
 
-            dc.DrawRectangle(this.OutlineBackground, null, this.Rectangle);
+            dc.DrawRectangle(this.OutlineBackground, null, rect);
         }
     }
 }

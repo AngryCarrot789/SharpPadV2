@@ -13,7 +13,7 @@
                 <ResourceDictionary Source="AdvancedContextService/ContextStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <Style TargetType="{x:Type textEditor:RZTextEditor}" BasedOn="{StaticResource {x:Type RichTextBox}}">
+            <Style TargetType="{x:Type textEditor:RZTextEditor}" BasedOn="{StaticResource {x:Type TextBox}}">
 
             </Style>
         </ResourceDictionary>

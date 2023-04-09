@@ -70,6 +70,7 @@
     <Compile Include="Converters\NullConverter.cs" />
     <Compile Include="Converters\ShortcutGestureConverter.cs" />
     <Compile Include="Converters\SpecialValueConverter.cs" />
+    <Compile Include="Interactivity\FileDropAttachments.cs" />
     <Compile Include="MainViewModel.cs" />
     <Compile Include="Services\ClipboardService.cs" />
     <Compile Include="Services\WinExplorerService.cs" />
@@ -97,6 +98,8 @@
     <Compile Include="Shortcuts\Views\ShortcutPathToInputGestureTextConverter.cs" />
     <Compile Include="Shortcuts\VisualTreeUtils.cs" />
     <Compile Include="Shortcuts\WPFKeyMapDeserialiser.cs" />
+    <Compile Include="Tabbing\ContentlessTabControl.cs" />
+    <Compile Include="TextEditor\IEditorContainer.cs" />
     <Compile Include="TextEditor\LineBorderOutlineAdorder.cs" />
     <Compile Include="TextEditor\RZTextEditor.cs" />
     <Compile Include="TextEditor\TextEditorViewModel.cs" />
@@ -111,6 +114,7 @@
     <Compile Include="Themes\ThemesController.cs" />
     <Compile Include="Themes\ThemeTypes.cs" />
     <Compile Include="Utils\FileUtils.cs" />
+    <Compile Include="Utils\TextPointerUtils.cs" />
     <Compile Include="Utils\TextUtils.cs" />
     <Compile Include="Views\BaseDialog.cs" />
     <Compile Include="Views\BaseWindow.cs" />
