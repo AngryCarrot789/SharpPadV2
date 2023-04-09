@@ -34,7 +34,7 @@
                 <TabControl ItemsSource="{Binding Editors, Mode=OneTime}" SelectedItem="{Binding ActiveTextEditor, UpdateSourceTrigger=PropertyChanged}" 
                             Background="{DynamicResource AREghZyBrush.ColourfulGlyph.MouseOver}" 
                             DockPanel.Dock="Top" Height="25" BorderThickness="0 1 0 0"
-                            i:FileDropAttachments.FileDropNotifier="{Binding}">
+                            i:FileDropAttachments.FileDropNotifier="{Binding UpdateSourceTrigger=PropertyChanged}">
                     <TabControl.ItemContainerStyle>
                         <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
                             <Setter Property="Padding" Value="4,2,4,0"/>
@@ -138,7 +138,7 @@
                                     FontSize="{Binding FontSize, UpdateSourceTrigger=PropertyChanged, FallbackValue='14'}"
                                     TextBlock.LineHeight="{Binding LineHeight, UpdateSourceTrigger=PropertyChanged, FallbackValue='21'}"
                                     TextBlock.LineStackingStrategy="BlockLineHeight"
-                                    acs:AdvancedContextMenu.ContextProvider="{Binding}">
+                                    acs:AdvancedContextMenu.ContextProvider="{Binding UpdateSourceTrigger=PropertyChanged}">
                         <t:RZTextEditor.ContextMenu>
                             <acs:AdvancedContextMenu FontFamily="Segoe UI" FontSize="12" TextBlock.LineHeight="16" TextBlock.LineStackingStrategy="MaxHeight"/>
                         </t:RZTextEditor.ContextMenu>

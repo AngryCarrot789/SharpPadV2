@@ -402,6 +402,9 @@ namespace SharpPadV2.TextEditor {
                 if (x == MsgDialogResult.Yes) {
                     await this.SaveFileActionAsync();
                 }
+
+                this.text = "";
+                this.IsDirty = false;
             }
 
             return true;
