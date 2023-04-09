@@ -1,0 +1,21 @@
+﻿<Application x:Class="SharpPadV2.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SharpPadV2"
+             xmlns:textEditor="clr-namespace:SharpPadV2.TextEditor"
+             Startup="Application_Startup">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/SoftDark.xaml"/>
+                <ResourceDictionary Source="Themes/ControlColoursSoftDarkBlue.xaml"/>
+                <ResourceDictionary Source="Themes/Controls.xaml"/>
+                <ResourceDictionary Source="AdvancedContextService/ContextStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style TargetType="{x:Type textEditor:RZTextEditor}" BasedOn="{StaticResource {x:Type RichTextBox}}">
+
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

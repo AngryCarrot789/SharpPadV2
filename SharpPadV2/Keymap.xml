@@ -1,0 +1,28 @@
+﻿<?xml version="1.0"?>
+<KeyMap>
+    <Group Name="Application">
+        <Group Name="TextEditor">
+            <Shortcut Name="OpenFileAction">
+                <Keystroke Mods="CTRL" Key="O"/>
+            </Shortcut>
+            <Shortcut Name="SaveFileAction">
+                <Keystroke Mods="CTRL" Key="S"/>
+            </Shortcut>
+            <Shortcut Name="SaveFileAsAction">
+                <Keystroke Mods="CTRL+SHIFT" Key="S"/>
+            </Shortcut>
+            <Shortcut Name="CutAction" DisplayName="Cut the selected text to the clipboard">
+                <Keystroke Mods="CTRL" Key="X"/>
+            </Shortcut>
+            <Shortcut Name="CopyAction" DisplayName="Copy the selected text to the clipboard">
+                <Keystroke Mods="CTRL" Key="C"/>
+            </Shortcut>
+            <Shortcut Name="PasteAction" DisplayName="Paste your clipboard at the caret/cursor">
+                <Keystroke Mods="CTRL" Key="V"/>
+            </Shortcut>
+            <Shortcut Name="DeleteSelectionAction" DisplayName="Delete the selection that you have">
+                <Keystroke Key="Delete"/>
+            </Shortcut>
+        </Group>
+    </Group>
+</KeyMap>
