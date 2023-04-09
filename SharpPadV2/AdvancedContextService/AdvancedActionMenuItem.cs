@@ -50,7 +50,7 @@ namespace SharpPadV2.AdvancedContextService {
             object dataContext = this.DataContext is ActionContextEntry entry ? entry.DataContext : null;
             this.Dispatcher.InvokeAsync(async () => {
                 try {
-                    await ActionManager.Instance.Execute(id, dataContext);
+                    await ActionManager.Instance.Execute(id, dataContext ?? this.DataContext);
                 }
                 finally {
                     this.isExecuting = 0;

@@ -5,4 +5,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\Dialogs\EncodingModifier\" />
+  </ItemGroup>
+
 </Project>

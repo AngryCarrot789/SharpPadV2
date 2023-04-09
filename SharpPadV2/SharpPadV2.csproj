@@ -76,7 +76,7 @@
     <Compile Include="Shortcuts\AppShortcutManager.cs" />
     <Compile Include="Shortcuts\AppShortcutProcessor.cs" />
     <Compile Include="Shortcuts\Bindings\ShortcutActionBinding.cs" />
-    <Compile Include="Shortcuts\Bindings\ShortcutBinding.cs" />
+    <Compile Include="Shortcuts\Bindings\ShortcutCommandBinding.cs" />
     <Compile Include="Shortcuts\Dialogs\KeyboardDialogService.cs" />
     <Compile Include="Shortcuts\Dialogs\KeyStrokeInputWindow.xaml.cs">
       <DependentUpon>KeyStrokeInputWindow.xaml</DependentUpon>
@@ -97,6 +97,7 @@
     <Compile Include="Shortcuts\Views\ShortcutPathToInputGestureTextConverter.cs" />
     <Compile Include="Shortcuts\VisualTreeUtils.cs" />
     <Compile Include="Shortcuts\WPFKeyMapDeserialiser.cs" />
+    <Compile Include="TextEditor\LineBorderOutlineAdorder.cs" />
     <Compile Include="TextEditor\RZTextEditor.cs" />
     <Compile Include="TextEditor\TextEditorViewModel.cs" />
     <Compile Include="Themes\Attached\CornerHelper.cs" />
@@ -228,6 +229,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Actions\Menus\" />
+    <Folder Include="Views\Dialogs\EncodingModifier\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SharpPadV2.Core\SharpPadV2.Core.csproj">

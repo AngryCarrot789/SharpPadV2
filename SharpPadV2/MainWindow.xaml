@@ -9,6 +9,7 @@
         xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
         xmlns:acs="clr-namespace:SharpPadV2.AdvancedContextService"
         xmlns:focus="clr-namespace:SharpPadV2.Shortcuts"
+        xmlns:sc="clr-namespace:SharpPadV2.Shortcuts.Bindings"
         mc:Ignorable="d"
         Title="MainWindow" Height="576" Width="720"
         Style="{StaticResource CustomWindowStyleEx}" 
@@ -53,7 +54,7 @@
                                 x:Name="MainTextEditor"
                                 acs:AdvancedContextMenu.ContextProvider="{Binding}"
                                 focus:UIFocusGroup.FocusGroupPath="Application/TextEditor"
-                                focus:UIFocusGroup.UsePreviewEvents="True">
+                                focus:UIFocusGroup.UsePreviewEvents="True" OutlineBorderThickness="2" OutlineBorderBrush="#4C5B5B5B">
                     <FlowDocument LineHeight="{Binding LineHeight, UpdateSourceTrigger=PropertyChanged, FallbackValue='1.2'}"
                                   FontFamily="{Binding FontFamily, UpdateSourceTrigger=PropertyChanged, FallbackValue='Consolas'}"
                                   FontSize="{Binding FontSize, UpdateSourceTrigger=PropertyChanged, FallbackValue='14'}"/>

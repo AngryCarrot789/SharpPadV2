@@ -5,13 +5,13 @@ using SharpPadV2.Core;
 using SharpPadV2.Core.Shortcuts.Managing;
 
 namespace SharpPadV2.Shortcuts.Bindings {
-    public class ShortcutBinding : InputBinding {
+    public class ShortcutCommandBinding : InputBinding {
         public static readonly DependencyProperty ShortcutAndUsageIdProperty =
             DependencyProperty.Register(
                 "ShortcutAndUsageId",
                 typeof(string),
-                typeof(ShortcutBinding),
-                new PropertyMetadata(null, (d, e) => ((ShortcutBinding) d).OnShouldcutAndUsageIdChanged((string) e.OldValue, (string) e.NewValue)));
+                typeof(ShortcutCommandBinding),
+                new PropertyMetadata(null, (d, e) => ((ShortcutCommandBinding) d).OnShouldcutAndUsageIdChanged((string) e.OldValue, (string) e.NewValue)));
 
         /// <summary>
         /// <para>
@@ -47,7 +47,7 @@ namespace SharpPadV2.Shortcuts.Bindings {
 
         private readonly ShortcutActivateHandler onShortcutFired;
 
-        public ShortcutBinding() {
+        public ShortcutCommandBinding() {
             this.onShortcutFired = this.OnShortcutFired;
         }
 
@@ -81,6 +81,6 @@ namespace SharpPadV2.Shortcuts.Bindings {
             }
         }
 
-        protected override Freezable CreateInstanceCore() => new ShortcutBinding();
+        protected override Freezable CreateInstanceCore() => new ShortcutCommandBinding();
     }
 }

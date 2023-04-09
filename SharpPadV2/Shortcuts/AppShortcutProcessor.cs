@@ -145,7 +145,11 @@ namespace SharpPadV2.Shortcuts {
                 }
             }
 
-            return finalResult | await base.OnShortcutActivated(shortcut);
+            if (!finalResult && !string.IsNullOrWhiteSpace(shortcut.ActionID)) {
+                finalResult = await ActionManager.Instance.Execute(shortcut.ActionID, this.CurrentDataContext);
+            }
+
+            return finalResult;
         }
 
         public override bool OnNoSuchShortcutForKeyStroke(string @group, in KeyStroke stroke) {

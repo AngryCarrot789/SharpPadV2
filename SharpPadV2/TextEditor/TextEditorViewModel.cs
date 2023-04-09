@@ -9,6 +9,7 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using SharpPadV2.Converters;
 using SharpPadV2.Core;
+using SharpPadV2.Core.Actions;
 using SharpPadV2.Core.AdvancedContextService;
 using SharpPadV2.Core.AdvancedContextService.Base;
 using SharpPadV2.Core.Utils;
@@ -93,7 +94,7 @@ namespace SharpPadV2.TextEditor {
             this.currentEncoding = "UTF8";
             this.fontFamily = "Consolas";
             this.fontSize = 14;
-            this.lineHeight = 1.5d;
+            this.lineHeight = 5;
 
             this.OpenFileCommand = new AsyncRelayCommand(this.OpenFileActionAsync);
             this.SaveFileCommand = new AsyncRelayCommand(this.SaveFileActionAsync);
@@ -104,6 +105,48 @@ namespace SharpPadV2.TextEditor {
             this.DeleteSelectionCommand = new AsyncRelayCommand(this.DeleteSelectionActionAsync, this.CanExecuteSelectionUsageCommand);
             this.UndoCommand = new AsyncRelayCommand(this.UndoActionAsync, () => this.Editor.CanUndo);
             this.RedoCommand = new AsyncRelayCommand(this.RedoActionAsync, () => this.Editor.CanRedo);
+        }
+
+        /*
+            This could be added to the text editor control instead of having to call the c# register methods below
+            
+            <t:RZTextEditor.InputBindings>
+                <sc:ShortcutCommandBinding ShortcutAndUsageId="Application/TextEditor/OpenFileAction" Command="{Binding OpenFileCommand, Mode=OneTime}"/>
+                <sc:ShortcutCommandBinding ShortcutAndUsageId="Application/TextEditor/SaveFileAction" Command="{Binding SaveFileCommand, Mode=OneTime}"/>
+                <sc:ShortcutCommandBinding ShortcutAndUsageId="Application/TextEditor/SaveFileAsAction" Command="{Binding SaveFileAsCommand, Mode=OneTime}"/>
+                <sc:ShortcutCommandBinding ShortcutAndUsageId="Application/TextEditor/UndoAction" Command="{Binding UndoCommand, Mode=OneTime}"/>
+                <sc:ShortcutCommandBinding ShortcutAndUsageId="Application/TextEditor/RedoAction" Command="{Binding RedoCommand, Mode=OneTime}"/>
+                <sc:ShortcutCommandBinding ShortcutAndUsageId="Application/TextEditor/RedoAction2nd" Command="{Binding RedoCommand, Mode=OneTime}"/>
+                <sc:ShortcutCommandBinding ShortcutAndUsageId="Application/TextEditor/CutAction" Command="{Binding CutSelectionCommand, Mode=OneTime}"/>
+                <sc:ShortcutCommandBinding ShortcutAndUsageId="Application/TextEditor/CopyAction" Command="{Binding CopySelectionCommand, Mode=OneTime}"/>
+                <sc:ShortcutCommandBinding ShortcutAndUsageId="Application/TextEditor/PasteAction" Command="{Binding PasteClipboardCommand, Mode=OneTime}"/>
+                <sc:ShortcutCommandBinding ShortcutAndUsageId="Application/TextEditor/DeleteSelectionAction" Command="{Binding DeleteSelectionCommand, Mode=OneTime}"/>
+            </t:RZTextEditor.InputBindings>
+         */
+
+        static TextEditorViewModel() {
+            ActionManager.Instance.Register("actions.editor.OpenFileAction",        AnAction.Lambda(SimpleAction(async (x) => await x.OpenFileActionAsync())));
+            ActionManager.Instance.Register("actions.editor.SaveFileAction",        AnAction.Lambda(SimpleAction(async (x) => await x.SaveFileActionAsync())));
+            ActionManager.Instance.Register("actions.editor.SaveFileAsAction",      AnAction.Lambda(SimpleAction(async (x) => await x.SaveFileAsActionAsync())));
+            ActionManager.Instance.Register("actions.editor.UndoAction",            AnAction.Lambda(SimpleAction(async (x) => await x.UndoActionAsync())));
+            ActionManager.Instance.Register("actions.editor.RedoAction",            AnAction.Lambda(SimpleAction(async (x) => await x.RedoActionAsync())));
+            ActionManager.Instance.Register("actions.editor.RedoAction2nd",         AnAction.Lambda(SimpleAction(async (x) => await x.RedoActionAsync())));
+            ActionManager.Instance.Register("actions.editor.CutAction",             AnAction.Lambda(SimpleAction(async (x) => await x.CutSelectionActionAsync())));
+            ActionManager.Instance.Register("actions.editor.CopyAction",            AnAction.Lambda(SimpleAction(async (x) => await x.CopySelectionActionAsync())));
+            ActionManager.Instance.Register("actions.editor.PasteAction",           AnAction.Lambda(SimpleAction(async (x) => await x.PasteClipboardActionAsync())));
+            ActionManager.Instance.Register("actions.editor.DeleteSelectionAction", AnAction.Lambda(SimpleAction(async (x) => await x.DeleteSelectionActionAsync())));
+        }
+
+        private static Func<AnActionEvent, Task<bool>> SimpleAction(Func<TextEditorViewModel, Task> action) {
+            return async (x) => {
+                if (x.DataContext is TextEditorViewModel editor) {
+                    await action(editor);
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            };
         }
 
         private bool CanExecuteSelectionUsageCommand() {
@@ -143,7 +186,7 @@ namespace SharpPadV2.TextEditor {
 
         public async Task SaveFileActionAsync() {
             if (File.Exists(this.filePath) || this.HasSavedOnce) {
-                await this.SaveFileAction(this.filePath);
+                await this.SaveFileActionAsync(this.filePath);
             }
             else {
                 await this.SaveFileAsActionAsync();
@@ -157,11 +200,11 @@ namespace SharpPadV2.TextEditor {
             };
 
             if (sfd.ShowDialog() == true) {
-                await this.SaveFileAction(this.FilePath = sfd.FileName);
+                await this.SaveFileActionAsync(this.FilePath = sfd.FileName);
             }
         }
 
-        public async Task SaveFileAction(string filePath) {
+        public async Task SaveFileActionAsync(string filePath) {
             try {
                 await this.SaveFile(filePath);
                 this.HasSavedOnce = true;
@@ -200,6 +243,9 @@ namespace SharpPadV2.TextEditor {
         public async Task PasteClipboardActionAsync() {
             try {
                 this.Editor.Paste();
+                foreach (Block block in this.Editor.Document.Blocks) {
+                    block.ClearValue(TextElement.BackgroundProperty);
+                }
             }
             catch (Exception e) {
                 await IoC.MessageDialogs.ShowMessageAsync("Failed to cut", $"Could not cut content: {e.Message}");
@@ -258,12 +304,16 @@ namespace SharpPadV2.TextEditor {
         public List<IContextEntry> GetContext(List<IContextEntry> list) {
             list.Add(new CommandContextEntry("Undo", this.UndoCommand, null, null, "Undo your last modification"));
             list.Add(new CommandContextEntry("Redo", this.RedoCommand, null, null, "Redo your last undo action"));
+            list.Add(ContextEntrySeparator.Instance);
+            CommandContextEntry paste = new CommandContextEntry("Paste", this.PasteClipboardCommand, null, ShortcutGestureConverter.PathToGesture("Application/TextEditor/PasteAction"), "Paste the clipboard text to your caret/cursor");
             if (this.CanExecuteSelectionUsageCommand()) {
-                list.Add(ContextEntrySeparator.Instance);
                 list.Add(new CommandContextEntry("Cut", this.CutSelectionCommand, null, ShortcutGestureConverter.PathToGesture("Application/TextEditor/CutAction"), "Cut the selected text (Delete and add to clipboard)"));
                 list.Add(new CommandContextEntry("Copy", this.CopySelectionCommand, null, ShortcutGestureConverter.PathToGesture("Application/TextEditor/CopyAction"), "Copy the selected text to clipboard"));
-                list.Add(new CommandContextEntry("Paste", this.PasteClipboardCommand, null, ShortcutGestureConverter.PathToGesture("Application/TextEditor/PasteAction"), "Paste the clipboard text to your caret/cursor"));
+                list.Add(paste);
                 list.Add(new CommandContextEntry("Delete", this.DeleteSelectionCommand, null, ShortcutGestureConverter.PathToGesture("Application/TextEditor/DeleteSelectionAction"), "Deletes the selected text"));
+            }
+            else {
+                list.Add(paste);
             }
 
             return list;
