@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
-using System.Windows.Input;
-using SharpPadV2.Core;
+using SharpPadV2.Core.TextEditor;
 
 namespace SharpPadV2.TextEditor {
     public interface IEditorContainer {
+        ITextEditor Editor { get; }
+
         Task<bool> CloseEditor(TextEditorViewModel editor);
     }
 }

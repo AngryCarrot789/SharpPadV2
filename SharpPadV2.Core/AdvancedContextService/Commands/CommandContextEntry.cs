@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Windows.Input;
 using SharpPadV2.Core.AdvancedContextService.Base;
 
-namespace SharpPadV2.Core.AdvancedContextService {
+namespace SharpPadV2.Core.AdvancedContextService.Commands {
     /// <summary>
     /// The default implementation for a context entry (aka menu item), which also supports modifying the header,
     /// input gesture text, command and command parameter to reflect the UI menu item

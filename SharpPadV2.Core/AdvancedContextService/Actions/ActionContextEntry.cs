@@ -4,7 +4,7 @@ using System.Windows.Input;
 using SharpPadV2.Core.Actions;
 using SharpPadV2.Core.AdvancedContextService.Base;
 
-namespace SharpPadV2.Core.AdvancedContextService {
+namespace SharpPadV2.Core.AdvancedContextService.Actions {
     /// <summary>
     /// The default implementation for a context entry (aka menu item), which also supports modifying the header,
     /// input gesture text, command and command parameter to reflect the UI menu item
@@ -48,11 +48,11 @@ namespace SharpPadV2.Core.AdvancedContextService {
         }
 
         private void Init() {
-            this.InvokeCommand = new AsyncRelayCommand(this.InvokeAction, () => ActionManager.Instance.GetAction(this.ActionId) != null);
+            this.InvokeCommand = new AsyncRelayCommand(this.InvokeAction, () => IoC.ActionManager.GetAction(this.ActionId) != null);
         }
 
         protected virtual Task InvokeAction() {
-            return ActionManager.Instance.Execute(this.actionId, this);
+            return IoC.ActionManager.Execute(this.actionId, this);
         }
 
         public void UpdateDisplayData(string id = null) {
@@ -60,7 +60,7 @@ namespace SharpPadV2.Core.AdvancedContextService {
                 id = this.actionId;
             }
 
-            AnAction action = ActionManager.Instance.GetAction(id);
+            AnAction action = IoC.ActionManager.GetAction(id);
             if (action != null) {
                 string header = action.Header();
                 if (!string.IsNullOrEmpty(header)) {

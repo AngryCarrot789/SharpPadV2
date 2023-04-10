@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Serialization;
-using REghZy.Hotkeys.Shortcuts.Inputs;
-using REghZy.Hotkeys.Shortcuts.Managing;
+using SharpPadV2.Core.Shortcuts.Inputs;
+using SharpPadV2.Core.Shortcuts.Managing;
 
-namespace REghZy.Hotkeys.Shortcuts.Serialization {
+namespace SharpPadV2.Core.Shortcuts.Serialization {
     public abstract class KeyMapDeserialiser {
         private static readonly XmlSerializer Serializer;
 

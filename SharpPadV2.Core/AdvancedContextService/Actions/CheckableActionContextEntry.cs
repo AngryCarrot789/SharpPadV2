@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using SharpPadV2.Core.AdvancedContextService.Base;
 
-namespace SharpPadV2.Core.AdvancedContextService {
+namespace SharpPadV2.Core.AdvancedContextService.Actions {
     public class CheckableActionContextEntry : ActionContextEntry {
         private bool isChecked;
         public bool IsChecked {

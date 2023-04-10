@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using REghZy.Hotkeys.Shortcuts.Inputs;
-using REghZy.Hotkeys.Shortcuts.Usage;
+using SharpPadV2.Core.Shortcuts.Inputs;
+using SharpPadV2.Core.Shortcuts.Usage;
 
-namespace REghZy.Hotkeys.Shortcuts {
+namespace SharpPadV2.Core.Shortcuts {
     public class MouseKeyboardShortcut : IMouseShortcut, IKeyboardShortcut {
         public static MouseShortcut EmptyMouseKeyboardShortcut = new MouseShortcut();
 

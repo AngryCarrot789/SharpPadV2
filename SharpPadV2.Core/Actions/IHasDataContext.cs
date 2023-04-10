@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace SharpPadV2.Core.Actions.Data {
+namespace SharpPadV2.Core.Actions {
     /// <summary>
     /// An object that stores context information, along other custom data
     /// </summary>

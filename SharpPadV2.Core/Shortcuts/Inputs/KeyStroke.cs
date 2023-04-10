@@ -1,14 +1,14 @@
 using System;
 using System.Text;
 
-namespace REghZy.Hotkeys.Shortcuts.Inputs {
+namespace SharpPadV2.Core.Shortcuts.Inputs {
     /// <summary>
     /// Represents a key stroke, as in, a key press or release which may have modifier keys present
     /// <para>
     /// KeyStrokes typically do not represent modifier key strokes, meaning <see cref="KeyCode"/> would not equal the key code for SHIFT, CTRL, ALT, etc
     /// </para>
     /// </summary>
-    public readonly struct KeyStroke : IInputStroke, IEquatable<KeyStroke> {
+    public readonly struct KeyStroke : IInputStroke {
         /// <summary>
         /// A non-null function for converting a key code into a string representation
         /// </summary>
@@ -47,6 +47,10 @@ namespace REghZy.Hotkeys.Shortcuts.Inputs {
             this.KeyCode = keyCode;
             this.Modifiers = modifiers;
             this.IsKeyRelease = isKeyRelease;
+        }
+
+        public bool Equals(IInputStroke stroke) {
+            return stroke is KeyStroke other && this.Equals(other);
         }
 
         public bool Equals(KeyStroke stroke) {

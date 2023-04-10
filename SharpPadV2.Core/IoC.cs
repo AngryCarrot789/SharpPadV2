@@ -1,4 +1,5 @@
 using System;
+using SharpPadV2.Core.Actions;
 using SharpPadV2.Core.Services;
 using SharpPadV2.Core.Shortcuts.Dialogs;
 using SharpPadV2.Core.Shortcuts.Managing;
@@ -9,6 +10,10 @@ using SharpPadV2.Core.Views.Dialogs.UserInputs;
 namespace SharpPadV2.Core {
     public static class IoC {
         public static SimpleIoC Instance { get; } = new SimpleIoC();
+
+        public static ActionManager ActionManager { get; } = new ActionManager();
+        public static Action<string> OnShortcutManagedChanged { get; set; }
+        public static Action<string> BroadcastShortcutActivity { get; set; }
 
         public static IDispatcher Dispatcher { get; set; }
         public static IClipboardService Clipboard { get; set; }
@@ -23,11 +28,5 @@ namespace SharpPadV2.Core {
 
         public static ShortcutManager ShortcutManager { get; set; }
         public static IShortcutManagerDialogService ShortcutManagerDialog { get; set; }
-
-        public static bool IsBigEndian { get; set; }
-        public static bool UseCompression { get; set; }
-
-        public static Action<string> OnShortcutManagedChanged { get; set; }
-        public static Action<string> BroadcastShortcutActivity { get; set; }
     }
 }

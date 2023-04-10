@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using SharpPadV2.Core.AdvancedContextService;
+using SharpPadV2.Core.AdvancedContextService.Actions;
 using SharpPadV2.Core.AdvancedContextService.Base;
 
 namespace SharpPadV2.AdvancedContextService {
@@ -100,15 +101,21 @@ namespace SharpPadV2.AdvancedContextService {
             return (int) element.GetValue(InsertionIndexProperty);
         }
 
+
+        private static readonly ContextMenuEventHandler MenuOpenHandler = OnContextMenuOpening;
+        private static readonly ContextMenuEventHandler MenuCloseHandler = OnContextMenuClosing;
+
         private static void OnContextProviderPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {
-            if (e.NewValue != e.OldValue) {
-                ContextMenuService.RemoveContextMenuOpeningHandler(d, OnContextMenuOpening);
-                ContextMenuService.RemoveContextMenuClosingHandler(d, OnContextMenuClosing);
-                if (e.NewValue != null) {
-                    GetOrCreateContextMenu(d);
-                    ContextMenuService.AddContextMenuOpeningHandler(d, OnContextMenuOpening);
-                    ContextMenuService.AddContextMenuClosingHandler(d, OnContextMenuClosing);
-                }
+            if (ReferenceEquals(e.OldValue, e.NewValue)) {
+                return;
+            }
+
+            ContextMenuService.RemoveContextMenuOpeningHandler(d, MenuOpenHandler);
+            ContextMenuService.RemoveContextMenuClosingHandler(d, MenuCloseHandler);
+            if (e.NewValue != null) {
+                GetOrCreateContextMenu(d);
+                ContextMenuService.AddContextMenuOpeningHandler(d, MenuOpenHandler);
+                ContextMenuService.AddContextMenuClosingHandler(d, MenuCloseHandler);
             }
         }
 

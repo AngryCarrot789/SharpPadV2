@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using REghZy.Hotkeys.Shortcuts.Inputs;
-using REghZy.Hotkeys.Shortcuts.Usage;
+using SharpPadV2.Core.Shortcuts.Inputs;
+using SharpPadV2.Core.Shortcuts.Usage;
 
-namespace REghZy.Hotkeys.Shortcuts {
+namespace SharpPadV2.Core.Shortcuts {
     /// <summary>
     /// Represents a keyboard-based shortcut. This consists of 1 or more key strokes required to activate it
     /// <para>

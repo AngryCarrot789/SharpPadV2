@@ -7,14 +7,14 @@ namespace SharpPadV2.Shortcuts {
         public static void SplitValue(string input, out string shortcutId, out string usageId) {
             if (string.IsNullOrWhiteSpace(input)) {
                 shortcutId = null;
-                usageId = AppShortcutManager.DEFAULT_USAGE_ID;
+                usageId = WPFShortcutManager.DEFAULT_USAGE_ID;
                 return;
             }
 
             int split = input.LastIndexOf(':');
             if (split == -1) {
                 shortcutId = input;
-                usageId = AppShortcutManager.DEFAULT_USAGE_ID;
+                usageId = WPFShortcutManager.DEFAULT_USAGE_ID;
             }
             else {
                 shortcutId = input.Substring(0, split);
@@ -24,7 +24,7 @@ namespace SharpPadV2.Shortcuts {
 
                 usageId = input.Substring(split + 1);
                 if (string.IsNullOrWhiteSpace(usageId)) {
-                    usageId = AppShortcutManager.DEFAULT_USAGE_ID;
+                    usageId = WPFShortcutManager.DEFAULT_USAGE_ID;
                 }
             }
         }
@@ -47,10 +47,10 @@ namespace SharpPadV2.Shortcuts {
         public static bool GetMouseStrokeForEvent(MouseWheelEventArgs e, out MouseStroke stroke) {
             int button;
             if (e.Delta < 0) {
-                button = AppShortcutManager.BUTTON_WHEEL_DOWN;
+                button = WPFShortcutManager.BUTTON_WHEEL_DOWN;
             }
             else if (e.Delta > 0) {
-                button = AppShortcutManager.BUTTON_WHEEL_UP;
+                button = WPFShortcutManager.BUTTON_WHEEL_UP;
             }
             else {
                 stroke = default;

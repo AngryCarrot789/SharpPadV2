@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using REghZy.Hotkeys.Shortcuts.Inputs;
+using SharpPadV2.Core.Shortcuts.Inputs;
 
-namespace REghZy.Hotkeys.Shortcuts.Usage {
+namespace SharpPadV2.Core.Shortcuts.Usage {
     public interface IShortcutUsage {
         /// <summary>
         /// A reference to the shortcut that created this instance
@@ -9,7 +9,7 @@ namespace REghZy.Hotkeys.Shortcuts.Usage {
         IShortcut Shortcut { get; }
 
         /// <summary>
-        /// Whether this input usage has been completed and is ready to be activated
+        /// Whether this input usage has been completed and is ready to be activated or cancelled
         /// </summary>
         bool IsCompleted { get; }
 

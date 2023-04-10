@@ -14,7 +14,7 @@ namespace SharpPadV2.Shortcuts.Views {
 
             this.window = new ShortcutEditorWindow();
             ShortcutManagerViewModel manager = new ShortcutManagerViewModel();
-            manager.LoadFromRoot(AppShortcutManager.Instance.Root);
+            manager.LoadFromRoot(WPFShortcutManager.Instance.Root);
             this.window.DataContext = manager;
             this.window.Closed += (sender, args) => {
                 this.window = null;

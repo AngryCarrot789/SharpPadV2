@@ -55,51 +55,51 @@ namespace SharpPadV2.Interactivity {
 
         private static void OnFileDropNotifierPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e, bool preview) {
             if (d is FrameworkElement element) {
-                element.PreviewDragEnter -= OnElementDragEnter;
-                element.DragEnter -= OnElementDragEnter;
+                // element.PreviewDragEnter -= OnElementDragEnter;
+                // element.DragEnter -= OnElementDragEnter;
                 element.PreviewDrop -= OnElementDrop;
                 element.Drop -= OnElementDrop;
 
                 if (e.NewValue != null) {
                     element.AllowDrop = true;
                     if (preview) {
-                        element.PreviewDragEnter += OnElementDragEnter;
+                        // element.PreviewDragEnter += OnElementDragEnter;
                         element.PreviewDrop += OnElementDrop;
                     }
                     else {
-                        element.DragEnter += OnElementDragEnter;
+                        // element.DragEnter += OnElementDragEnter;
                         element.Drop += OnElementDrop;
                     }
                 }
             }
         }
 
-        private static async void OnElementDragEnter(object sender, DragEventArgs e) {
-            FrameworkElement element = ((FrameworkElement) sender) ?? throw new Exception("Expected FrameworkElement");
-            if (GetIsProcessingDragDropEntry(element) || GetIsProcessingDragDropProcess(element)) {
-                return;
-            }
-
-            IFileDropNotifier notifier = GetFileDropNotifier(element) ?? GetPreviewFileDropNotifier(element);
-            if (notifier == null) {
-                return;
-            }
-
-            if (e.Data.GetDataPresent(DataFormats.FileDrop) && e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0) {
-                FileDropType type = (FileDropType) ((int) e.Effects & (int) FileDropType.All);
-                SetIsProcessingDragDropEntry(element, true);
-                try {
-                    if (!await notifier.CanDrop(files, type)) {
-                        e.Effects = DragDropEffects.None;
-                    }
-
-                    e.Handled = true;
-                }
-                finally {
-                    SetIsProcessingDragDropEntry(element, false);
-                }
-            }
-        }
+        // private static async void OnElementDragEnter(object sender, DragEventArgs e) {
+        //     FrameworkElement element = ((FrameworkElement) sender) ?? throw new Exception("Expected FrameworkElement");
+        //     if (GetIsProcessingDragDropEntry(element) || GetIsProcessingDragDropProcess(element)) {
+        //         return;
+        //     }
+        // 
+        //     IFileDropNotifier notifier = GetFileDropNotifier(element) ?? GetPreviewFileDropNotifier(element);
+        //     if (notifier == null) {
+        //         return;
+        //     }
+        // 
+        //     if (e.Data.GetDataPresent(DataFormats.FileDrop) && e.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0) {
+        //         FileDropType type = (FileDropType) ((int) e.Effects & (int) FileDropType.All);
+        //         SetIsProcessingDragDropEntry(element, true);
+        //         try {
+        //             if (!await notifier.CanDrop(files, type)) {
+        //                 e.Effects = DragDropEffects.None; // does nothing
+        //             }
+        // 
+        //             e.Handled = true;
+        //         }
+        //         finally {
+        //             SetIsProcessingDragDropEntry(element, false);
+        //         }
+        //     }
+        // }
 
         private static async void OnElementDrop(object sender, DragEventArgs e) {
             FrameworkElement element = ((FrameworkElement) sender) ?? throw new Exception("Expected FrameworkElement");

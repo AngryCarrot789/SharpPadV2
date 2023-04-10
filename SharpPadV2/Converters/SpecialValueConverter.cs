@@ -4,6 +4,10 @@ using System.Windows.Data;
 using System.Windows.Markup;
 
 namespace SharpPadV2.Converters {
+    /// <summary>
+    /// AngelSix way of doing singleton converters
+    /// </summary>
+    /// <typeparam name="T">The type of converter</typeparam>
     public abstract class SpecialValueConverter<T> : MarkupExtension, IValueConverter where T : class, new() {
         private static T instance;
 

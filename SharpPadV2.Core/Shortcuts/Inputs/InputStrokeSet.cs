@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace REghZy.Hotkeys.Shortcuts.Inputs {
+namespace SharpPadV2.Core.Shortcuts.Inputs {
     public class InputStrokeSet : IEnumerable<IInputStroke> {
         private readonly IInputStroke[] inputs;
 

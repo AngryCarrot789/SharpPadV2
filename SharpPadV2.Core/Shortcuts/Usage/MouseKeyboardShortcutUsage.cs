@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using REghZy.Hotkeys.Shortcuts.Inputs;
+using SharpPadV2.Core.Shortcuts.Inputs;
 
-namespace REghZy.Hotkeys.Shortcuts.Usage {
+namespace SharpPadV2.Core.Shortcuts.Usage {
     public class MouseKeyboardShortcutUsage : IKeyboardShortcutUsage, IMouseShortcutUsage {
         private readonly MouseKeyboardShortcut shortcut;
         // private int clickCounter;

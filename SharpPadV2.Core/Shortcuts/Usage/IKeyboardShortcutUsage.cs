@@ -1,6 +1,6 @@
-using REghZy.Hotkeys.Shortcuts.Inputs;
+using SharpPadV2.Core.Shortcuts.Inputs;
 
-namespace REghZy.Hotkeys.Shortcuts.Usage {
+namespace SharpPadV2.Core.Shortcuts.Usage {
     public interface IKeyboardShortcutUsage : IShortcutUsage {
         /// <summary>
         /// A reference to the shortcut that created this instance

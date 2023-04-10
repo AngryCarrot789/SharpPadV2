@@ -1,39 +1,55 @@
 ﻿<?xml version="1.0"?>
 <KeyMap>
     <Group Name="Application">
-        <Group Name="TextEditor">
-            <Shortcut Name="OpenFileShortcut" ActionID="actions.editor.OpenFileAction">
+        <Group Name="Views">
+            <Shortcut Name="CloseViewShortcut" ActionId="actions.views.CloseViewAction" IsGlobal="true">
+                <Keystroke Key="Escape"/>
+            </Shortcut>
+        </Group>
+        <Group Name="TabbedControl">
+            <Shortcut Name="CloseTabShortcut" ActionId="actions.tabs.CloseTabAction">
+                <Mousestroke Button="Middle"/>
+            </Shortcut>
+        </Group>
+        <Group Name="Editor">
+            <Shortcut Name="OpenFileShortcut" ActionId="actions.editor.OpenFileAction">
                 <Keystroke Mods="CTRL" Key="O"/>
             </Shortcut>
-            <Shortcut Name="SaveFileShortcut" ActionID="actions.editor.SaveFileAction">
+            <Shortcut Name="SaveFileShortcut" ActionId="actions.editor.SaveFileAction">
                 <Keystroke Mods="CTRL" Key="S"/>
             </Shortcut>
-            <Shortcut Name="SaveFileAsShortcut" ActionID="actions.editor.SaveFileAsAction">
+            <Shortcut Name="SaveFileAsShortcut" ActionId="actions.editor.SaveFileAsAction">
                 <Keystroke Mods="CTRL+SHIFT" Key="S"/>
             </Shortcut>
-            <Shortcut Name="UndoShortcut" ActionID="actions.editor.UndoAction">
+            <Shortcut Name="UndoShortcut" ActionId="actions.editor.UndoAction">
                 <Keystroke Mods="CTRL" Key="Z"/>
             </Shortcut>
-            <Shortcut Name="RedoShortcut" ActionID="actions.editor.RedoAction">
+            <Shortcut Name="RedoShortcut" ActionId="actions.editor.RedoAction">
                 <Keystroke Mods="CTRL" Key="Y"/>
             </Shortcut>
-            <Shortcut Name="RedoShortcut2nd" ActionID="actions.editor.RedoAction2nd">
+            <Shortcut Name="RedoShortcut2nd" ActionId="actions.editor.RedoAction">
                 <Keystroke Mods="CTRL+SHIFT" Key="Z"/>
             </Shortcut>
-            <Shortcut Name="CutShortcut" DisplayName="Cut the selected text to the clipboard" ActionID="actions.editor.CutAction">
+            <Shortcut Name="CutShortcut" DisplayName="Cut the selected text or current line to the clipboard" ActionId="actions.editor.CutAction">
                 <Keystroke Mods="CTRL" Key="X"/>
             </Shortcut>
-            <Shortcut Name="CopyShortcut" DisplayName="Copy the selected text to the clipboard" ActionID="actions.editor.CopyAction">
+            <Shortcut Name="CopyShortcut" DisplayName="Copy the selected text or current line to the clipboard" ActionId="actions.editor.CopyAction">
                 <Keystroke Mods="CTRL" Key="C"/>
             </Shortcut>
-            <Shortcut Name="PasteShortcut" DisplayName="Paste your clipboard at the caret/cursor" ActionID="actions.editor.PasteAction">
+            <Shortcut Name="DuplicateShortcut" DisplayName="Copy and paste (aka duplicate, without using the clipboard) the selected text or current line" ActionId="actions.editor.DuplicateAction">
+                <Keystroke Mods="CTRL" Key="D"/>
+            </Shortcut>
+            <Shortcut Name="PasteShortcut" DisplayName="Paste your clipboard at the caret/cursor" ActionId="actions.editor.PasteAction">
                 <Keystroke Mods="CTRL" Key="V"/>
             </Shortcut>
-            <Shortcut Name="DeleteSelectionShortcut" DisplayName="Delete the selection that you have" ActionID="actions.editor.DeleteSelectionAction">
+            <Shortcut Name="DeleteSelectionShortcut" DisplayName="Delete the selection that you have" ActionId="actions.editor.DeleteSelectionAction">
                 <Keystroke Key="Delete"/>
             </Shortcut>
-            <Shortcut Name="SelectLineShortcut" DisplayName="Selects the current line" ActionID="actions.editor.SelectLineAction">
+            <Shortcut Name="SelectLineShortcut" DisplayName="Selects the current line" ActionId="actions.editor.SelectLineAction">
                 <Keystroke Mods="CTRL+SHIFT" Key="A"/>
+            </Shortcut>
+            <Shortcut Name="AddOrRemoveCaretAtCursor" ActionId="actions.editor.AddOrRemoveCaretAtCursor">
+                <Mousestroke Mods="ALT+SHIFT" Button="LMB"/>
             </Shortcut>
         </Group>
     </Group>

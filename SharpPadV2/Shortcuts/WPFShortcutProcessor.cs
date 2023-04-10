@@ -5,23 +5,22 @@ using System.Windows;
 using System.Windows.Input;
 using SharpPadV2.Core;
 using SharpPadV2.Core.Actions;
-using SharpPadV2.Core.AdvancedContextService;
 using SharpPadV2.Core.Shortcuts.Inputs;
 using SharpPadV2.Core.Shortcuts.Managing;
 using SharpPadV2.Core.Shortcuts.Usage;
 using SharpPadV2.Core.Utils;
 
 namespace SharpPadV2.Shortcuts {
-    public class AppShortcutProcessor : ShortcutProcessor {
+    public class WPFShortcutProcessor : ShortcutProcessor {
         public new WPFShortcutManager Manager => (WPFShortcutManager) base.Manager;
 
         public string CurrentInputBindingUsageID { get; set; } = WPFShortcutManager.DEFAULT_USAGE_ID;
 
-        public AppShortcutProcessor(ShortcutManager manager) : base(manager) {
+        public WPFShortcutProcessor(ShortcutManager manager) : base(manager) {
 
         }
 
-        private static AppShortcutProcessor GetWindowProcessor(object sender) {
+        public static WPFShortcutProcessor GetProcessorForControl(object sender) {
             return sender is Window window ? UIFocusGroup.GetShortcutProcessor(window) : null;
         }
 
@@ -95,7 +94,7 @@ namespace SharpPadV2.Shortcuts {
                 return;
             }
 
-            AppShortcutProcessor processor = GetWindowProcessor(sender);
+            WPFShortcutProcessor processor = GetProcessorForControl(sender);
             if (processor == null) {
                 return;
             }
@@ -116,13 +115,13 @@ namespace SharpPadV2.Shortcuts {
 
         public void SetupDataContext(object sender, DependencyObject obj) {
             DefaultDataContext context = new DefaultDataContext();
-            if (obj is IHaveDataContext) {
-                context.Merge((IHaveDataContext) obj);
+            if (obj is IHasDataContext) {
+                context.Merge((IHasDataContext) obj);
             }
 
             if (obj is FrameworkElement element) {
                 object elementContext = element.DataContext;
-                if (elementContext is IHaveDataContext dc) {
+                if (elementContext is IHasDataContext dc) {
                     context.Merge(dc);
                 }
                 else if (elementContext != null) {
@@ -137,24 +136,27 @@ namespace SharpPadV2.Shortcuts {
         }
 
         public override async Task<bool> OnShortcutActivated(GroupedShortcut shortcut) {
-            // ShortcutInputGesture input = ShortcutInputGesture.CurrentInputGesture;
-            // if (input?.ShortcutKeyBinding != null && shortcut.Path == input.ShortcutKeyBinding.ShortcutID) {
-            //     input.IsCompleted = true;
-            // }
-
             bool finalResult = false;
-            if (WPFShortcutManager.InputBindingCallbackMap.TryGetValue(shortcut.Path, out Dictionary<string, List<ShortcutActivateHandler>> usageMap)) {
-                if ((shortcut.IsGlobal || shortcut.Group.IsGlobal) && usageMap.TryGetValue(WPFShortcutManager.DEFAULT_USAGE_ID, out List<ShortcutActivateHandler> callbacks2) && callbacks2.Count > 0) {
+            if (WPFShortcutManager.InputBindingCallbackMap.TryGetValue(shortcut.Path, out Dictionary<string, List<ActivationHandlerReference>> usageMap)) {
+                if ((shortcut.IsGlobal || shortcut.Group.IsGlobal) && usageMap.TryGetValue(WPFShortcutManager.DEFAULT_USAGE_ID, out List<ActivationHandlerReference> callbacks2) && callbacks2.Count > 0) {
                     IoC.BroadcastShortcutActivity($"Activated global shortcut: {shortcut}. Calling {callbacks2.Count} callbacks...");
-                    foreach (ShortcutActivateHandler callback in callbacks2) {
-                        finalResult |= await callback(this, shortcut);
+                    foreach (ActivationHandlerReference reference in callbacks2) {
+                        ShortcutActivateHandler callback = reference.Value;
+                        if (callback != null && await callback(this, shortcut)) {
+                            finalResult = true;
+                            break;
+                        }
                     }
                     IoC.BroadcastShortcutActivity($"Activated global shortcut: {shortcut}. Calling {callbacks2.Count} callbacks... Complete!");
                 }
-                else if (usageMap.TryGetValue(this.CurrentInputBindingUsageID, out List<ShortcutActivateHandler> callbacks1) && callbacks1.Count > 0) {
+                else if (usageMap.TryGetValue(this.CurrentInputBindingUsageID, out List<ActivationHandlerReference> callbacks1) && callbacks1.Count > 0) {
                     IoC.BroadcastShortcutActivity($"Activated shortcut: {shortcut}. Calling {callbacks1.Count} callbacks...");
-                    foreach (ShortcutActivateHandler callback in callbacks1) {
-                        finalResult |= await callback(this, shortcut);
+                    foreach (ActivationHandlerReference reference in callbacks1) {
+                        ShortcutActivateHandler callback = reference.Value;
+                        if (callback != null && await callback(this, shortcut)) {
+                            finalResult = true;
+                            break;
+                        }
                     }
                     IoC.BroadcastShortcutActivity($"Activated shortcut: {shortcut}. Calling {callbacks1.Count} callbacks... Complete!");
                 }

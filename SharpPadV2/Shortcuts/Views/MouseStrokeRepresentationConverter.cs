@@ -25,8 +25,8 @@ namespace SharpPadV2.Shortcuts.Views {
                 case 2: name = "Right Click"; break;
                 case 3: name = "X1 (Back)"; break;
                 case 4: name = "X2 (Forward)"; break;
-                case AppShortcutManager.BUTTON_WHEEL_UP: name = "Wheel Up"; break;
-                case AppShortcutManager.BUTTON_WHEEL_DOWN: name = "Wheel Down"; break;
+                case WPFShortcutManager.BUTTON_WHEEL_UP: name = "Wheel Up"; break;
+                case WPFShortcutManager.BUTTON_WHEEL_DOWN: name = "Wheel Down"; break;
                 default: throw new Exception("Invalid mouse button: " + mouseButton);
             }
 

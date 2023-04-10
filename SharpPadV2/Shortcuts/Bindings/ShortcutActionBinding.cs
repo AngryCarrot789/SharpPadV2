@@ -20,10 +20,10 @@ namespace SharpPadV2.Shortcuts.Bindings {
                 typeof(ShortcutActionBinding),
                 new PropertyMetadata(null));
 
-        public static readonly DependencyProperty DataContextProperty = DependencyProperty.Register("DataContext", typeof(object), typeof(ShortcutActionBinding), new PropertyMetadata(default(object)));
+        public static readonly DependencyProperty DataContextProperty = DependencyProperty.Register("DataContext", typeof(IHasDataContext), typeof(ShortcutActionBinding), new PropertyMetadata(null));
 
-        public object DataContext {
-            get => (object) this.GetValue(DataContextProperty);
+        public IHasDataContext DataContext {
+            get => (IHasDataContext) this.GetValue(DataContextProperty);
             set => this.SetValue(DataContextProperty, value);
         }
 
@@ -78,12 +78,12 @@ namespace SharpPadV2.Shortcuts.Bindings {
         private void OnShouldcutAndUsageIdChanged(string oldId, string newId) {
             if (!string.IsNullOrWhiteSpace(oldId)) {
                 ShortcutUtils.SplitValue(oldId, out string shortcutId, out string usageId);
-                AppShortcutManager.UnregisterHandler(shortcutId, usageId);
+                WPFShortcutManager.UnregisterHandler(shortcutId, usageId);
             }
 
             if (!string.IsNullOrWhiteSpace(newId)) {
                 ShortcutUtils.SplitValue(newId, out string shortcutId, out string usageId);
-                AppShortcutManager.RegisterHandler(shortcutId, usageId, this.onShortcutFired);
+                WPFShortcutManager.RegisterHandler(shortcutId, usageId, this.onShortcutFired);
             }
         }
 

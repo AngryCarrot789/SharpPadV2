@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using REghZy.Hotkeys.Shortcuts.Inputs;
-using REghZy.Hotkeys.Shortcuts.Serialization;
+using SharpPadV2.Core.Shortcuts.Inputs;
+using SharpPadV2.Core.Shortcuts.Serialization;
 using SharpPadV2.Core.Utils;
 
-namespace REghZy.Hotkeys.Shortcuts.Managing {
+namespace SharpPadV2.Core.Shortcuts.Managing {
     /// <summary>
     /// A collection of shortcuts
     /// </summary>

@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.33130.400
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpPadV2", "SharpPadV2\SharpPadV2.csproj", "{E0594A1C-A74C-4B91-8F60-BA8D91239DB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpPadV2.Core", "SharpPadV2.Core\SharpPadV2.Core.csproj", "{4F11A10C-6B7F-4557-B119-683000847D0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpPadV2.Core", "SharpPadV2.Core\SharpPadV2.Core.csproj", "{4F11A10C-6B7F-4557-B119-683000847D0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

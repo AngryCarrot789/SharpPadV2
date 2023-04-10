@@ -1,6 +1,6 @@
-using System;
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Media;
 
@@ -47,8 +47,9 @@ namespace SharpPadV2.TextEditor {
         }
 
         protected override void OnRender(DrawingContext dc) {
+            TextBoxBase editor = (TextBoxBase) this.AdornedElement;
             Rect rect = this.Rectangle;
-            if (rect.IsEmpty) {
+            if (rect.IsEmpty || !editor.IsEnabled || !this.IsEnabled) {
                 return;
             }
 
@@ -65,6 +66,8 @@ namespace SharpPadV2.TextEditor {
                 this.hasCheckedBorderPen = true;
             }
 
+            // need to add 4 for some reason
+            dc.PushClip(new RectangleGeometry(new Rect(0, 0, editor.ViewportWidth + 4, editor.ViewportHeight)));
             if (this.pen != null) {
                 double thickA = this.pen.Thickness * 0.5;
                 double thickB = this.pen.Thickness;
@@ -79,6 +82,7 @@ namespace SharpPadV2.TextEditor {
             }
 
             dc.DrawRectangle(this.OutlineBackground, null, rect);
+            dc.Pop();
         }
     }
 }

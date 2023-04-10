@@ -1,21 +1,13 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SharpPadV2.Core {
     /// <summary>
     /// A simple relay command, which does not take any parameters
     /// </summary>
-    public class AsyncRelayCommand : BaseRelayCommand {
+    public class AsyncRelayCommand : BaseAsyncRelayCommand {
         private readonly Func<Task> execute;
         private readonly Func<bool> canExecute;
-
-        /// <summary>
-        /// Because <see cref="Execute"/> is async void, it can be fired multiple
-        /// times while the task that <see cref="execute"/> returns is still running. This
-        /// is used to track if it's running or not
-        /// </summary>
-        private volatile int isRunningState; // maybe switch to atomic Interlocked?
 
         public AsyncRelayCommand(Func<Task> execute, Func<bool> canExecute = null) {
             if (execute == null) {
@@ -27,39 +19,17 @@ namespace SharpPadV2.Core {
         }
 
         public override bool CanExecute(object parameter) {
-            return this.isRunningState == 0 && base.CanExecute(parameter) && (this.canExecute == null || this.canExecute());
+            return base.CanExecute(parameter) && (this.canExecute == null || this.canExecute());
         }
 
-        public override async void Execute(object parameter) {
-            if (this.isRunningState == 1) {
-                return;
-            }
-
-            await this.ExecuteAsync();
-        }
-
-        public async Task ExecuteAsync() {
-            if (Interlocked.CompareExchange(ref this.isRunningState, 1, 0) == 1) {
-                return;
-            }
-
-            this.RaiseCanExecuteChanged();
-
-            try {
-                await this.execute();
-            }
-            finally {
-                this.isRunningState = 0;
-            }
-
-            this.RaiseCanExecuteChanged();
+        protected override async Task ExecuteAsyncOverride(object parameter) {
+            await this.execute();
         }
     }
 
-    public class AsyncRelayCommand<T> : BaseRelayCommand {
+    public class AsyncRelayCommand<T> : BaseAsyncRelayCommand {
         private readonly Func<T, Task> execute;
         private readonly Func<T, bool> canExecute;
-        private volatile int isRunningState;
 
         public bool ConvertParameter { get; set; }
 
@@ -74,36 +44,25 @@ namespace SharpPadV2.Core {
         }
 
         public override bool CanExecute(object parameter) {
-            if (this.isRunningState == 1) {
-                return false;
+            if (base.CanExecute(parameter)) {
+                if (this.ConvertParameter) {
+                    parameter = GetConvertedParameter<T>(parameter);
+                }
+
+                return (parameter == null || parameter is T) && this.canExecute((T) parameter);
             }
 
-            if (this.ConvertParameter) {
-                parameter = GetConvertedParameter<T>(parameter);
-            }
-
-            return base.CanExecute(parameter) && (parameter == null || parameter is T) && this.canExecute((T) parameter);
+            return false;
         }
 
-        public override async void Execute(object parameter) {
-            if (Interlocked.CompareExchange(ref this.isRunningState, 1, 0) == 1) {
-                return;
-            }
-
+        protected override async Task ExecuteAsyncOverride(object parameter) {
             if (this.ConvertParameter) {
                 parameter = GetConvertedParameter<T>(parameter);
             }
 
-            this.RaiseCanExecuteChanged();
-
-            try {
-                await this.execute((T) parameter);
+            if (parameter is T t) {
+                await this.execute(t);
             }
-            finally {
-                this.isRunningState = 0;
-            }
-
-            this.RaiseCanExecuteChanged();
         }
     }
 }

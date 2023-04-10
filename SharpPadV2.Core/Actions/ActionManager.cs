@@ -2,18 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace REghZy.Hotkeys.Actions {
+namespace SharpPadV2.Core.Actions {
     public class ActionManager {
-        public static ActionManager Instance { get; set; }
+        public static ActionManager Instance => IoC.ActionManager;
 
         private readonly Dictionary<string, AnAction> actions;
 
         public ActionManager() {
             this.actions = new Dictionary<string, AnAction>();
-        }
-
-        static ActionManager() {
-            Instance = new ActionManager();
         }
 
         public void Register(string id, AnAction action) {

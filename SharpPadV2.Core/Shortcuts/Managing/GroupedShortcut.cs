@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace REghZy.Hotkeys.Shortcuts.Managing {
+namespace SharpPadV2.Core.Shortcuts.Managing {
     /// <summary>
     /// A class used to store a reference to a <see cref="Shortcut"/> and its
     /// owning <see cref="ShortcutGroup"/>, and also other shortcut data

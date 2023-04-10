@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using SharpPadV2.Core.AdvancedContextService;
+using SharpPadV2.Core.AdvancedContextService.Actions;
+using SharpPadV2.Core.AdvancedContextService.Commands;
 
 namespace SharpPadV2.AdvancedContextService {
     public class AdvancedMenuItemStyleSelector : StyleSelector {

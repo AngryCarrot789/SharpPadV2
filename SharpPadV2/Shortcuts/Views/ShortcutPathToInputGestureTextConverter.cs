@@ -10,7 +10,7 @@ namespace SharpPadV2.Shortcuts.Views {
         public string ShortcutFormat { get; set; } = null;
 
         public static string ShortcutToInputGestureText(string path, string shortcutFormat = null, string noSuchShortcutFormat = null) {
-            GroupedShortcut shortcut = AppShortcutManager.Instance.FindShortcutByPath(path);
+            GroupedShortcut shortcut = WPFShortcutManager.Instance.FindShortcutByPath(path);
             if (shortcut == null) {
                 return noSuchShortcutFormat == null ? path : string.Format(noSuchShortcutFormat, path);
             }

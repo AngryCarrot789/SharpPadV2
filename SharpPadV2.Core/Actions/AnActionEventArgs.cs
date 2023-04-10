@@ -1,4 +1,4 @@
-namespace REghZy.Hotkeys.Actions {
+namespace SharpPadV2.Core.Actions {
     /// <summary>
     /// Action event arguments for when an action is about to be executed
     /// </summary>

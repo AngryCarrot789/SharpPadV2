@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace REghZy.Hotkeys.Actions {
+namespace SharpPadV2.Core.Actions {
     public abstract class AnAction {
         private static readonly Func<string> ProvideNullString = () => null;
 

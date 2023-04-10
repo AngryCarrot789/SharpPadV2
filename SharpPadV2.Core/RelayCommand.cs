@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 
 namespace SharpPadV2.Core {
     public class RelayCommand : BaseRelayCommand {

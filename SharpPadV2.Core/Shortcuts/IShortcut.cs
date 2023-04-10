@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using REghZy.Hotkeys.Shortcuts.Inputs;
-using REghZy.Hotkeys.Shortcuts.Usage;
+using SharpPadV2.Core.Shortcuts.Inputs;
+using SharpPadV2.Core.Shortcuts.Usage;
 
-namespace REghZy.Hotkeys.Shortcuts {
+namespace SharpPadV2.Core.Shortcuts {
     /// <summary>
     /// The base class for all shortcuts
     /// </summary>

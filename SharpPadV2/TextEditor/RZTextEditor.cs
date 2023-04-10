@@ -7,7 +7,7 @@ using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using SharpPadV2.Core;
-using SharpPadV2.Utils;
+using SharpPadV2.Core.TextEditor;
 
 namespace SharpPadV2.TextEditor {
     public class RZTextEditor : TextBox {
@@ -53,6 +53,10 @@ namespace SharpPadV2.TextEditor {
             }
         }
 
+        public CaretManager CaretManager { get; }
+
+        public ITextEditor Editor { get; }
+
         private ScrollViewer PART_ContentHost;
 
         public RZTextEditor() {
@@ -67,6 +71,8 @@ namespace SharpPadV2.TextEditor {
             this.Loaded += this.OnLoaded;
             this.TextChanged += (sender, args) => this.DrawRectangleAtCaret();
             this.SelectionChanged += (sender, args) => this.DrawRectangleAtCaret();
+            this.CaretManager = new CaretManager(this);
+            this.Editor = new TextEditorWrapper(this);
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo) {
@@ -128,20 +134,9 @@ namespace SharpPadV2.TextEditor {
                 y -= this.VerticalOffset;
 
                 // For some reason you have to add 4 for it to stretch the entire width... there's a 4px offset weirdly
-                this.OutlineBorder.Rectangle = new Rect(0, y, width + 4, height);
+                this.OutlineBorder.Rectangle = new Rect(0, y, width + 4, height + 1);
             }
         }
-
-        // public void DrawRectangleAtCaret() {
-        //     double width = this.ExtentWidth;
-        //     if (width < 1) {
-        //         return;
-        //     }
-        //     TextPointer lineBegin = TextPointerUtils.GetLineBegin(this.CaretPosition);
-        //     Rect a = lineBegin.GetCharacterRect(LogicalDirection.Forward);
-        //     double offsetY = this.Document.LineHeight * 0.5d;
-        //     this.OutlineBorder.Rectangle = new Rect(0, a.Y - offsetY, width, a.Height + offsetY);
-        // }
 
         public void CutLineOrSelection() {
             if (this.SelectionLength > 0) {
@@ -165,6 +160,30 @@ namespace SharpPadV2.TextEditor {
             }
         }
 
+        public void DuplicateLineOrSelection() {
+            this.BeginChange();
+            if (this.SelectionLength <= 0) {
+                this.SelectEntireCurrentLine();
+            }
+
+            int selectionLength = this.SelectionLength;
+            int endIndex = this.CaretIndex + selectionLength;
+            string selection = this.SelectedText;
+            string newLineText = Environment.NewLine;
+            if (!selection.EndsWith(newLineText)) {
+                this.Text = this.Text.Insert(endIndex, newLineText + selection);
+                endIndex += newLineText.Length;
+                selectionLength += newLineText.Length;
+            }
+            else {
+                this.Text = this.Text.Insert(endIndex, selection);
+            }
+
+            this.CaretIndex = endIndex;
+            this.SelectionLength = selectionLength;
+            this.EndChange();
+        }
+
         public void SelectEntireCurrentLine() {
             // search backwards from caret to start of string
             int caret = this.CaretIndex;
@@ -184,6 +203,63 @@ namespace SharpPadV2.TextEditor {
             }
 
             this.Select(startLineIndex, endLineIndex - startLineIndex);
+        }
+
+        private class TextEditorWrapper : ITextEditor {
+            private readonly RZTextEditor editor;
+
+            public int CaretIndex {
+                get => this.editor.CaretIndex;
+                set => this.editor.CaretIndex = value;
+            }
+
+            public int SelectionLength {
+                get => this.editor.SelectionLength;
+                set => this.editor.SelectionLength = value;
+            }
+
+            public bool CanUndo => this.editor.CanUndo;
+            public bool CanRedo => this.editor.CanRedo;
+
+            public TextEditorWrapper(RZTextEditor editor) {
+                this.editor = editor;
+            }
+
+            public void SelectRange(int index, int length) {
+                this.editor.Select(index, length);
+            }
+
+            public void SetSelectedText(string text) {
+                this.editor.SelectedText = text;
+            }
+
+            public void CutLineOrSelection() {
+                this.editor.CutLineOrSelection();
+            }
+
+            public void CopyLineOrSelection() {
+                this.editor.CopyLineOrSelection();
+            }
+
+            public void DuplicateLineOrSelection() {
+                this.editor.DuplicateLineOrSelection();
+            }
+
+            public void PasteClipboard() {
+                this.editor.Paste();
+            }
+
+            public void SelectEntireCurrentLine() {
+                this.editor.SelectEntireCurrentLine();
+            }
+
+            public void Undo() {
+                this.editor.Undo();
+            }
+
+            public void Redo() {
+                this.editor.Redo();
+            }
         }
     }
 }

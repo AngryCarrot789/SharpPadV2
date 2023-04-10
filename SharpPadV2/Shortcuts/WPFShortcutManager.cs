@@ -8,20 +8,20 @@ using SharpPadV2.Core.Shortcuts.Managing;
 using SharpPadV2.Core.Utils;
 
 namespace SharpPadV2.Shortcuts {
-    public class AppShortcutManager : ShortcutManager {
+    public class WPFShortcutManager : ShortcutManager {
         public const int BUTTON_WHEEL_UP = 143;   // Away from the user
         public const int BUTTON_WHEEL_DOWN = 142; // Towards the user
         public const string DEFAULT_USAGE_ID = "DEF";
 
-        public static AppShortcutManager Instance { get; } = new AppShortcutManager();
+        public static WPFShortcutManager Instance { get; } = new WPFShortcutManager();
 
         /// <summary>
         /// Maps an action ID to a dictionary which maps a custom usage ID to the callback functions
         /// </summary>
-        public static Dictionary<string, Dictionary<string, List<ShortcutActivateHandler>>> InputBindingCallbackMap { get; }
+        public static Dictionary<string, Dictionary<string, List<ActivationHandlerReference>>> InputBindingCallbackMap { get; }
 
-        static AppShortcutManager() {
-            InputBindingCallbackMap = new Dictionary<string, Dictionary<string, List<ShortcutActivateHandler>>>();
+        static WPFShortcutManager() {
+            InputBindingCallbackMap = new Dictionary<string, Dictionary<string, List<ActivationHandlerReference>>>();
             KeyStroke.KeyCodeToStringProvider = (x) => ((Key) x).ToString();
             KeyStroke.ModifierToStringProvider = (x) => {
                 StringJoiner joiner = new StringJoiner(new StringBuilder(), " + ");
@@ -49,33 +49,33 @@ namespace SharpPadV2.Shortcuts {
             MouseStroke.ModifierToStringProvider = KeyStroke.ModifierToStringProvider;
         }
 
-        public AppShortcutManager() {
+        public WPFShortcutManager() {
 
         }
 
         public static void UnregisterHandler(string shortcutId, string usageId) {
             ShortcutUtils.EnforceIdFormat(shortcutId, nameof(shortcutId));
             ShortcutUtils.EnforceIdFormat(usageId, nameof(usageId));
-            if (InputBindingCallbackMap.TryGetValue(shortcutId, out Dictionary<string, List<ShortcutActivateHandler>> usageMap)) {
+            if (InputBindingCallbackMap.TryGetValue(shortcutId, out Dictionary<string, List<ActivationHandlerReference>> usageMap)) {
                 usageMap.Remove(usageId);
             }
         }
 
-        public static void RegisterHandler(string shortcutId, string usageId, ShortcutActivateHandler handler) {
+        public static void RegisterHandler(string shortcutId, string usageId, ShortcutActivateHandler handler, bool weak = true) {
             ShortcutUtils.EnforceIdFormat(shortcutId, nameof(shortcutId));
             ShortcutUtils.EnforceIdFormat(usageId, nameof(usageId));
-            if (!InputBindingCallbackMap.TryGetValue(shortcutId, out Dictionary<string, List<ShortcutActivateHandler>> usageMap)) {
-                InputBindingCallbackMap[shortcutId] = usageMap = new Dictionary<string, List<ShortcutActivateHandler>>();
+            if (!InputBindingCallbackMap.TryGetValue(shortcutId, out Dictionary<string, List<ActivationHandlerReference>> usageMap)) {
+                InputBindingCallbackMap[shortcutId] = usageMap = new Dictionary<string, List<ActivationHandlerReference>>();
             }
 
-            if (!usageMap.TryGetValue(usageId, out List<ShortcutActivateHandler> list)) {
-                usageMap[usageId] = list = new List<ShortcutActivateHandler>();
+            if (!usageMap.TryGetValue(usageId, out List<ActivationHandlerReference> list)) {
+                usageMap[usageId] = list = new List<ActivationHandlerReference>();
             }
 
-            list.Add(handler);
+            list.Add(new ActivationHandlerReference(handler, weak));
         }
 
-        private static AppShortcutProcessor GetShortcutProcessorForUIObject(object sender) {
+        private static WPFShortcutProcessor GetShortcutProcessorForUIObject(object sender) {
             return sender is Window window ? UIFocusGroup.GetShortcutProcessor(window) : null;
         }
 
@@ -114,7 +114,7 @@ namespace SharpPadV2.Shortcuts {
                     element.PreviewKeyUp += RootKeyUpHandlerPreview;
                     element.MouseWheel += RootWheelHandlerNonPreview;
                     element.PreviewMouseWheel += RootWheelHandlerPreview;
-                    element.SetValue(UIFocusGroup.ShortcutProcessorProperty, new AppShortcutProcessor(Instance));
+                    element.SetValue(UIFocusGroup.ShortcutProcessorProperty, new WPFShortcutProcessor(Instance));
                 }
                 else {
                     element.ClearValue(UIFocusGroup.ShortcutProcessorProperty);
@@ -130,7 +130,7 @@ namespace SharpPadV2.Shortcuts {
                 UIFocusGroup.ProcessFocusGroupChange(hit);
             }
 
-            AppShortcutProcessor processor = GetShortcutProcessorForUIObject(sender);
+            WPFShortcutProcessor processor = GetShortcutProcessorForUIObject(sender);
             processor?.OnWindowMouseDown(sender, e, isPreviewEvent);
         }
 
@@ -145,7 +145,7 @@ namespace SharpPadV2.Shortcuts {
         }
 
         private static void HandleRootMouseWheel(object sender, MouseWheelEventArgs e, bool isPreviewEvent) {
-            AppShortcutProcessor processor = GetShortcutProcessorForUIObject(sender);
+            WPFShortcutProcessor processor = GetShortcutProcessorForUIObject(sender);
             processor?.OnWindowMouseWheel(sender, e, isPreviewEvent);
         }
 
@@ -158,12 +158,16 @@ namespace SharpPadV2.Shortcuts {
         }
 
         public static void OnKeyEvent(object window, DependencyObject focused, KeyEventArgs e, bool isRelease, bool isPreviewEvent) {
-            AppShortcutProcessor processor = GetShortcutProcessorForUIObject(window);
+            WPFShortcutProcessor processor = GetShortcutProcessorForUIObject(window);
             processor?.OnKeyEvent(window, focused, e, isRelease, isPreviewEvent);
         }
 
         public override ShortcutProcessor NewProcessor() {
-            return new AppShortcutProcessor(this);
+            return new WPFShortcutProcessor(this);
+        }
+
+        public void SetRoot(ShortcutGroup @group) {
+            this.Root = @group;
         }
     }
 }

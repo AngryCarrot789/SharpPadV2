@@ -14,7 +14,7 @@ namespace SharpPadV2.Actions.XAML {
 
         public ImageSource Icon { get; set; }
 
-        public string ActionID { get; set; }
+        public string ActionId { get; set; }
 
         public StaticMenuItemCollection Items {
             get => this.items ?? (this.items = new StaticMenuItemCollection());

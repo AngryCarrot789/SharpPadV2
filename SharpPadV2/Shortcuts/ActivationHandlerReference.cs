@@ -16,6 +16,10 @@ namespace SharpPadV2.Shortcuts {
             }
         }
 
+        public bool IsWeak => this.weakReference != null;
+
+        public bool IsStrong => this.weakReference == null;
+
         public ActivationHandlerReference(ShortcutActivateHandler handler, bool weak) {
             if (weak) {
                 this.weakReference = new WeakReference<ShortcutActivateHandler>(handler);

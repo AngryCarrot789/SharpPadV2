@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Threading;
 using SharpPadV2.Core.Actions;
 using SharpPadV2.Core.AdvancedContextService;
+using SharpPadV2.Core.AdvancedContextService.Actions;
+using SharpPadV2.Core.AdvancedContextService.Commands;
 
 namespace SharpPadV2.AdvancedContextService {
     public class AdvancedActionMenuItem : AdvancedMenuItem {
@@ -26,6 +28,13 @@ namespace SharpPadV2.AdvancedContextService {
         }
 
         protected override void OnClick() {
+            object contex = this.DataContext;
+            // context should not be an instance of CommandContextEntry... but just in case
+            if (contex is CommandContextEntry || contex is ActionContextEntry) {
+                base.OnClick(); // clicking is handled in the entry
+                return;
+            }
+
             if (Interlocked.CompareExchange(ref this.isExecuting, 1, 0) == 1) {
                 return;
             }
@@ -47,10 +56,25 @@ namespace SharpPadV2.AdvancedContextService {
         }
 
         protected virtual void DispatchAction(string id) {
-            object dataContext = this.DataContext is ActionContextEntry entry ? entry.DataContext : null;
+            IHasDataContext context;
+            if (this.DataContext is IHasDataContext) {
+                context = (IHasDataContext) this.DataContext;
+            }
+            else if (this is IHasDataContext) {
+                context = (IHasDataContext) this;
+            }
+            else {
+                context = new DefaultDataContext();
+                context.AddContext(this.DataContext);
+            }
+
+            if (this.IsCheckable) {
+                context.SetCustomData("IsChecked", this.IsChecked);
+            }
+
             this.Dispatcher.InvokeAsync(async () => {
                 try {
-                    await ActionManager.Instance.Execute(id, dataContext ?? this.DataContext);
+                    await ActionManager.Instance.Execute(id, context);
                 }
                 finally {
                     this.isExecuting = 0;

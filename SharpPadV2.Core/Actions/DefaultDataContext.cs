@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SharpPadV2.Core.Actions.Data {
+namespace SharpPadV2.Core.Actions {
     public class DefaultDataContext : IHasDataContext {
         private Dictionary<string, object> map;
         private readonly List<object> context;

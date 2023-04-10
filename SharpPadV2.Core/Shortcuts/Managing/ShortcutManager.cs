@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace REghZy.Hotkeys.Shortcuts.Managing {
+namespace SharpPadV2.Core.Shortcuts.Managing {
     /// <summary>
     /// A class for storing and managing shortcuts
     /// </summary>

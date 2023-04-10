@@ -14,18 +14,19 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="576" Width="620"
         Style="{StaticResource CustomWindowStyleEx}" 
-        Background="{DynamicResource AREghZyBrush.Primary.2.Background.Static}"
-        TitlebarBrush="{DynamicResource AREghZyBrush.Primary.2.Background.Static}"
+        Background="{DynamicResource AREghZyBrush.Primary.3.Background.Static}"
+        TitlebarBrush="{DynamicResource AREghZyBrush.Primary.3.Background.Static}"
         d:DataContext="{d:DesignInstance local:MainViewModel}"
         focus:UIFocusGroup.IsGlobalShortcutFocusTarget="True"
+        focus:UIFocusGroup.FocusGroupPath="Application/Views"
         BorderBrush="{DynamicResource AREghZyBrush.ColourfulGlyph.MouseOver}">
     <Grid>
         <Menu VerticalAlignment="Top">
             <MenuItem Header="File">
                 <MenuItem Header="New" Command="{Binding NewEmptyFileCommand, Mode=OneTime}"/>
                 <MenuItem Header="Open file" Command="{Binding OpenFileCommand, Mode=OneTime}"/>
-                <MenuItem Header="Save" Command="{Binding ActiveTextEditor.SaveFileCommand}"/>
-                <MenuItem Header="Save as..." Command="{Binding ActiveTextEditor.SaveFileAsCommand}"/>
+                <MenuItem Header="Save" DataContext="{Binding ActiveTextEditor, UpdateSourceTrigger=PropertyChanged}" Command="{Binding SaveFileCommand, Mode=OneTime}"/>
+                <MenuItem Header="Save as..." DataContext="{Binding ActiveTextEditor, UpdateSourceTrigger=PropertyChanged}" Command="{Binding SaveFileAsCommand, Mode=OneTime}"/>
             </MenuItem>
             <MenuItem Header="Edit"/>
         </Menu>
@@ -33,8 +34,9 @@
             <DockPanel>
                 <TabControl ItemsSource="{Binding Editors, Mode=OneTime}" SelectedItem="{Binding ActiveTextEditor, UpdateSourceTrigger=PropertyChanged}" 
                             Background="{DynamicResource AREghZyBrush.ColourfulGlyph.MouseOver}" 
-                            DockPanel.Dock="Top" Height="25" BorderThickness="0 1 0 0"
-                            i:FileDropAttachments.FileDropNotifier="{Binding UpdateSourceTrigger=PropertyChanged}">
+                            DockPanel.Dock="Top" Height="24" BorderThickness="0 1 0 0"
+                            i:FileDropAttachments.FileDropNotifier="{Binding Mode=OneTime}"
+                            focus:UIFocusGroup.FocusGroupPath="Application/TabbedControl">
                     <TabControl.ItemContainerStyle>
                         <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
                             <Setter Property="Padding" Value="4,2,4,0"/>
@@ -42,12 +44,9 @@
                                 <Setter.Value>
                                     <DataTemplate DataType="{x:Type t:TextEditorViewModel}">
                                         <Grid Background="Transparent">
-                                            <Grid.InputBindings>
-                                                <MouseBinding MouseAction="MiddleClick" Command="{Binding CloseSelfCommand, Mode=OneTime}"/>
-                                            </Grid.InputBindings>
-                                            <TextBlock Text="{Binding EditorName, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" Margin="0 0 23 0"/>
+                                            <TextBlock Text="{Binding EditorName, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" Margin="0 0 22 0"/>
                                             <Button Background="Transparent" BorderBrush="Transparent" BorderThickness="0" 
-                                                    HorizontalAlignment="Right" Width="20" VerticalAlignment="Stretch"
+                                                    HorizontalAlignment="Right" Width="18" VerticalAlignment="Stretch"
                                                     Content="X" Command="{Binding CloseSelfCommand, Mode=OneTime}"/>
                                         </Grid>
                                     </DataTemplate>
@@ -106,26 +105,32 @@
                         </Style>
                     </TabControl.ItemContainerStyle>
                 </TabControl>
-                <Border DataContext="{Binding ActiveTextEditor, UpdateSourceTrigger=PropertyChanged}" Height="23" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
-                    <Grid>
+                <Border IsEnabled="{Binding IsEditorVisible, UpdateSourceTrigger=PropertyChanged}"
+                        Height="23" DockPanel.Dock="Bottom" VerticalAlignment="Bottom">
+                    <Grid DataContext="{Binding ActiveTextEditor, UpdateSourceTrigger=PropertyChanged}" >
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="65*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="7"/>
                             <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="7"/>
                             <ColumnDefinition Width="60"/>
                         </Grid.ColumnDefinitions>
-                        <ComboBox SelectedIndex="{Binding LineSeparatorType, UpdateSourceTrigger=PropertyChanged}" Grid.Column="2" VerticalAlignment="Center" Padding="5,0" FontFamily="Consolas" Margin="0,2,2,2">
-                            <ComboBoxItem Content="CRLF (Windows       \r\n)"/>
-                            <ComboBoxItem Content="LF   (Unix/macOS    \n)"/>
-                            <ComboBoxItem Content="CR   (Classic macOS \r)"/>
+                        <TextBlock Grid.Column="0" Text="{Binding FilePath}" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0" Margin="0,4,0,3"/>
+                        <Separator Grid.Column="1" Style="{StaticResource VerticalSeparator}" Margin="0,1"/>
+                        <TextBlock Grid.Column="2" Text="{Binding CurrentEncoding}" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0" Margin="0,4,0,3"/>
+                        <Separator Grid.Column="3" Style="{StaticResource VerticalSeparator}" Margin="0,1"/>
+                        <ComboBox Grid.Column="4" SelectedIndex="{Binding LineSeparatorType, UpdateSourceTrigger=PropertyChanged}"
+                                  VerticalAlignment="Center" Padding="5,0" FontFamily="Consolas" Margin="0,2,2,2">
+                            <ComboBoxItem Content="CRLF" ToolTip="Windows (\r\n)" ToolTipService.InitialShowDelay="200"/>
+                            <ComboBoxItem Content="LF"   ToolTip="Unix/macOS (\n)" ToolTipService.InitialShowDelay="200"/>
+                            <ComboBoxItem Content="CR"   ToolTip="Classic macOS (\r)" ToolTipService.InitialShowDelay="200"/>
                         </ComboBox>
-                        <TextBlock Text="{Binding CurrentEncoding}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0"/>
-                        <TextBlock Text="{Binding FilePath}" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="5,0"/>
                     </Grid>
                 </Border>
                 <Grid IsEnabled="{Binding IsEditorVisible, UpdateSourceTrigger=PropertyChanged}">
                     <t:RZTextEditor x:Name="MainTextEditor"
                                     OutlineBorderThickness="2" OutlineBorderBrush="#4C5B5B5B"
-                                    Background="{DynamicResource AREghZyBrush.Deep.2.Background.Static}"
+                                    Background="{DynamicResource AREghZyBrush.Deep.3.Background.Static}"
                                     BorderBrush="Transparent"
                                     BorderThickness="0"
                                     VerticalScrollBarVisibility="Visible"

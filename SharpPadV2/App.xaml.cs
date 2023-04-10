@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using SharpPadV2.Converters;
 using SharpPadV2.Core;
 using SharpPadV2.Core.Services;
 using SharpPadV2.Core.Shortcuts.Managing;
 using SharpPadV2.Core.Shortcuts.ViewModels;
 using SharpPadV2.Services;
 using SharpPadV2.Shortcuts;
+using SharpPadV2.Shortcuts.Converters;
 using SharpPadV2.Shortcuts.Dialogs;
 using SharpPadV2.Shortcuts.Views;
 using SharpPadV2.Views.Dialogs.FilePicking;
@@ -36,21 +32,20 @@ namespace SharpPadV2 {
             InputStrokeViewModel.MouseToReadableString = MouseStrokeRepresentationConverter.ToStringFunction;
             IoC.KeyboardDialogs = new KeyboardDialogService();
             IoC.MouseDialogs = new MouseDialogService();
-            IoC.ShortcutManager = AppShortcutManager.Instance;
+            IoC.ShortcutManager = WPFShortcutManager.Instance;
             IoC.ShortcutManagerDialog = new ShortcutManagerDialogService();
             IoC.OnShortcutManagedChanged = (x) => {
                 if (!string.IsNullOrWhiteSpace(x)) {
-                    ShortcutGestureConverter.BroadcastChange();
+                    GlobalUpdateShortcutGestureConverter.BroadcastChange();
                     // UpdatePath(this.Resources, x);
                 }
             };
 
             string filePath = @"F:\VSProjsV2\SharpPadV2\SharpPadV2\Keymap.xml";
             if (File.Exists(filePath)) {
-                AppShortcutManager.Instance.Root = null;
                 using (FileStream stream = File.OpenRead(filePath)) {
                     ShortcutGroup group = WPFKeyMapDeserialiser.Instance.Deserialise(stream);
-                    AppShortcutManager.Instance.Root = group;
+                    WPFShortcutManager.Instance.SetRoot(group);
                 }
             }
             else {

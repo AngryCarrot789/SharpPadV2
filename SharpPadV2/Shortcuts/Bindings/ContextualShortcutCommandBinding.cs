@@ -1,8 +1,12 @@
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using SharpPadV2.Core;
+using SharpPadV2.Core.Shortcuts;
+using SharpPadV2.Core.Shortcuts.Inputs;
 using SharpPadV2.Core.Shortcuts.Managing;
+using SharpPadV2.Core.Shortcuts.Usage;
 
 namespace SharpPadV2.Shortcuts.Bindings {
     /// <summary>
@@ -10,7 +14,7 @@ namespace SharpPadV2.Shortcuts.Bindings {
     /// <para>
     /// Care must be taken with these, because they are registered globally, meaning there is a memory leak potential.
     /// Every time an instance of this class registers itself, a callback will be invoked when the shortcut is invoked
-    /// (and that callback will intern execute the command). To unregister, you can set <see cref="ShortcutAndUsageId"/> to null
+    /// (and that callback will intern execute the command). To unregister, you can set <see cref="ShortcutPath"/> to null
     /// </para>
     /// <para>
     /// You can use the "UsageID" part to further filter which command finally gets called but overall, you can't for
@@ -18,13 +22,13 @@ namespace SharpPadV2.Shortcuts.Bindings {
     /// input bindings do not have an "added/removed from visual tree" event
     /// </para>
     /// </summary>
-    public class ShortcutCommandBinding : InputBinding {
-        public static readonly DependencyProperty ShortcutAndUsageIdProperty =
+    public class ContextualShortcutCommandBinding : InputBinding {
+        public static readonly DependencyProperty ShortcutPathProperty =
             DependencyProperty.Register(
-                "ShortcutAndUsageId",
+                "ShortcutPath",
                 typeof(string),
-                typeof(ShortcutCommandBinding),
-                new PropertyMetadata(null, (d, e) => ((ShortcutCommandBinding) d).OnShouldcutAndUsageIdChanged((string) e.OldValue, (string) e.NewValue)));
+                typeof(ContextualShortcutCommandBinding),
+                new PropertyMetadata(null, (d, e) => ((ContextualShortcutCommandBinding) d).OnShortcutPathPropertyChanged((string) e.OldValue, (string) e.NewValue)));
 
         /// <summary>
         /// <para>
@@ -39,40 +43,23 @@ namespace SharpPadV2.Shortcuts.Bindings {
         /// Examples: "Path/To/My/Shortcut:UsageID", "My/Action"
         /// </para>
         /// </summary>
-        public string ShortcutAndUsageId {
-            get => (string) this.GetValue(ShortcutAndUsageIdProperty);
-            set => this.SetValue(ShortcutAndUsageIdProperty, value);
+        public string ShortcutPath {
+            get => (string) this.GetValue(ShortcutPathProperty);
+            set => this.SetValue(ShortcutPathProperty, value);
         }
 
-        public string ShortcutId {
-            get {
-                ShortcutUtils.SplitValue(this.ShortcutAndUsageId, out string id, out _);
-                return id;
-            }
+        public GroupedShortcut Shortcut => WPFShortcutManager.Instance.FindShortcutByPath(this.ShortcutPath);
+
+        public IShortcutUsage Usage { get; set; }
+
+        public ContextualShortcutCommandBinding() {
+
         }
 
-        public string UsageId {
-            get {
-                ShortcutUtils.SplitValue(this.ShortcutAndUsageId, out _, out string id);
-                return id;
-            }
-        }
-
-        private readonly ShortcutActivateHandler fireShortcutHandler;
-
-        public ShortcutCommandBinding() {
-            this.fireShortcutHandler = this.OnShortcutFired;
-        }
-
-        private void OnShouldcutAndUsageIdChanged(string oldId, string newId) {
-            if (!string.IsNullOrWhiteSpace(oldId)) {
-                ShortcutUtils.SplitValue(oldId, out string shortcutId, out string usageId);
-                WPFShortcutManager.UnregisterHandler(shortcutId, usageId);
-            }
-
-            if (!string.IsNullOrWhiteSpace(newId)) {
-                ShortcutUtils.SplitValue(newId, out string shortcutId, out string usageId);
-                WPFShortcutManager.RegisterHandler(shortcutId, usageId, this.fireShortcutHandler, true);
+        private void OnShortcutPathPropertyChanged(string oldValue, string newValue) {
+            this.Gesture = null;
+            if (!string.IsNullOrWhiteSpace(newValue)) {
+                this.Gesture = new KeyAndMouseInputGesture(this);
             }
         }
 
@@ -94,6 +81,68 @@ namespace SharpPadV2.Shortcuts.Bindings {
             }
         }
 
-        protected override Freezable CreateInstanceCore() => new ShortcutCommandBinding();
+        protected override Freezable CreateInstanceCore() => new ContextualShortcutCommandBinding();
+
+        public bool MatchKeyInput(object target, KeyEventArgs e) {
+            if (this.Usage != null || !(target is DependencyObject obj)) {
+                return false;
+            }
+
+            Key key = e.Key == Key.System ? e.SystemKey : e.Key;
+            if (ShortcutUtils.IsModifierKey(key) || key == Key.DeadCharProcessed) {
+                return false;
+            }
+
+            GroupedShortcut shortcut = this.Shortcut;
+            // if (shortcut != null && shortcut.Shortcut is IKeyboardShortcut ks) {
+            //     if (UIFocusGroup.GetShortcutProcessor(obj) is WPFShortcutProcessor processor) {
+            //         if (!WPFShortcutProcessor.CanProcessEvent(obj, e.RoutedEvent == UIElement.PreviewKeyUpEvent || e.RoutedEvent == UIElement.PreviewKeyDownEvent)) {
+            //             return;
+            //         }
+            //         try {
+            //             this.CurrentInputBindingUsageID = UIFocusGroup.GetUsageID(focused) ?? WPFShortcutManager.DEFAULT_USAGE_ID;
+            //             this.SetupDataContext(sender, focused);
+            //             KeyStroke stroke = new KeyStroke((int) key, (int) Keyboard.Modifiers, isRelease);
+            //             if (await processor.OnKeyStroke(UIFocusGroup.FocusedGroupPath, stroke)) {
+            //                 e.Handled = true;
+            //             }
+            //         }
+            //         finally {
+            //             this.CurrentDataContext = null;
+            //             this.CurrentInputBindingUsageID = WPFShortcutManager.DEFAULT_USAGE_ID;
+            //         }
+            //     }
+            // }
+
+            return false;
+        }
+
+        public bool MatchMouseInput(object target, MouseEventArgs e) {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    public class KeyAndMouseInputGesture : InputGesture {
+        public ContextualShortcutCommandBinding Shortcut { get; }
+
+        public KeyAndMouseInputGesture(ContextualShortcutCommandBinding shortcut) {
+            this.Shortcut = shortcut;
+        }
+
+        public override bool Matches(object targetElement, InputEventArgs args) {
+            if (this.Shortcut.Usage != null && this.Shortcut.Usage.IsCompleted) {
+                return false;
+            }
+
+            if (args is KeyEventArgs kea) {
+                return this.Shortcut.MatchKeyInput(targetElement, kea);
+            }
+            else if (args is MouseEventArgs mea) {
+                return this.Shortcut.MatchMouseInput(targetElement, mea);
+            }
+            else {
+                return false;
+            }
+        }
     }
 }

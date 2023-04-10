@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using REghZy.Hotkeys.Shortcuts.Inputs;
-using REghZy.Hotkeys.Shortcuts.Usage;
+using SharpPadV2.Core.Actions;
+using SharpPadV2.Core.Shortcuts.Inputs;
+using SharpPadV2.Core.Shortcuts.Usage;
 
-namespace REghZy.Hotkeys.Shortcuts.Managing {
+namespace SharpPadV2.Core.Shortcuts.Managing {
     /// <summary>
     /// A shortcut processor. This is used for each window, and should only really be used by a single thread at a time
     /// <para>

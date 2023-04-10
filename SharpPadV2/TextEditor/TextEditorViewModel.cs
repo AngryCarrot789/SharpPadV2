@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Input;
 using Microsoft.Win32;
-using SharpPadV2.Converters;
 using SharpPadV2.Core;
 using SharpPadV2.Core.Actions;
 using SharpPadV2.Core.AdvancedContextService;
+using SharpPadV2.Core.AdvancedContextService.Actions;
 using SharpPadV2.Core.AdvancedContextService.Base;
 using SharpPadV2.Core.Interactivity;
-using SharpPadV2.Core.Utils;
+using SharpPadV2.Core.TextEditor;
 using SharpPadV2.Core.Views.Dialogs.FilePicking;
 using SharpPadV2.Core.Views.Dialogs.Message;
 using SharpPadV2.Utils;
@@ -108,16 +106,14 @@ namespace SharpPadV2.TextEditor {
         public ICommand RedoCommand { get; }
         public ICommand CloseSelfCommand { get; }
 
-        // Keep a raw handle for now
-        public RZTextEditor Editor { get; }
-
         public Encoding FileEncoding { get; set; }
 
-        public IEditorContainer Container { get; }
+        public IEditorContainer Container { get; set; }
 
-        public TextEditorViewModel(RZTextEditor editor, IEditorContainer container) {
+        public ITextEditor Editor => this.Container.Editor;
+
+        public TextEditorViewModel(IEditorContainer container) {
             this.Container = container;
-            this.Editor = editor;
             this.FileEncoding = Encoding.UTF8;
             this.currentEncoding = "UTF8";
             this.fontFamily = "Consolas";
@@ -129,7 +125,7 @@ namespace SharpPadV2.TextEditor {
             this.SaveFileCommand = new AsyncRelayCommand(this.SaveFileActionAsync);
             this.SaveFileAsCommand = new AsyncRelayCommand(this.SaveFileAsActionAsync);
             this.CutSelectionCommand = new AsyncRelayCommand(this.CutSelectionActionAsync, this.CanExecuteSelectionUsageCommand);
-            this.CopySelectionCommand = new AsyncRelayCommand(this.CopySelectionActionAsync, this.CanExecuteSelectionUsageCommand);
+            this.CopySelectionCommand = new AsyncRelayCommand(this.CopyLineOrSelectionActionAsync, this.CanExecuteSelectionUsageCommand);
             this.PasteClipboardCommand = new AsyncRelayCommand(this.PasteClipboardActionAsync);
             this.DeleteSelectionCommand = new AsyncRelayCommand(this.DeleteSelectionActionAsync, this.CanExecuteSelectionUsageCommand);
             this.SelectCurrentLineCommand = new AsyncRelayCommand(this.SelectLineActionAsync);
@@ -158,21 +154,23 @@ namespace SharpPadV2.TextEditor {
          */
 
         static TextEditorViewModel() {
-            ActionManager.Instance.Register("actions.editor.OpenFileAction",        AnAction.Lambda(EditorAction(async (x) => await x.OpenFileActionAsync())));
-            ActionManager.Instance.Register("actions.editor.SaveFileAction",        AnAction.Lambda(EditorAction(async (x) => await x.SaveFileActionAsync())));
-            ActionManager.Instance.Register("actions.editor.SaveFileAsAction",      AnAction.Lambda(EditorAction(async (x) => await x.SaveFileAsActionAsync())));
-            ActionManager.Instance.Register("actions.editor.UndoAction",            AnAction.Lambda(EditorAction(async (x) => await x.UndoActionAsync())));
-            ActionManager.Instance.Register("actions.editor.RedoAction",            AnAction.Lambda(EditorAction(async (x) => await x.RedoActionAsync())));
-            ActionManager.Instance.Register("actions.editor.RedoAction2nd",         AnAction.Lambda(EditorAction(async (x) => await x.RedoActionAsync())));
-            ActionManager.Instance.Register("actions.editor.CutAction",             AnAction.Lambda(EditorAction(async (x) => await x.CutSelectionActionAsync())));
-            ActionManager.Instance.Register("actions.editor.CopyAction",            AnAction.Lambda(EditorAction(async (x) => await x.CopySelectionActionAsync())));
-            ActionManager.Instance.Register("actions.editor.PasteAction",           AnAction.Lambda(EditorAction(async (x) => await x.PasteClipboardActionAsync())));
-            ActionManager.Instance.Register("actions.editor.DeleteSelectionAction", AnAction.Lambda(EditorAction(async (x) => await x.DeleteSelectionActionAsync())));
-            ActionManager.Instance.Register("actions.editor.SelectLineAction",      AnAction.Lambda(EditorAction(async (x) => await x.SelectLineActionAsync())));
+            ActionManager.Instance.Register("actions.tabs.CloseTabAction",             AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.Container.CloseEditor(x)),         "Close Document",   "Closes/removes this document"));
+            ActionManager.Instance.Register("actions.editor.OpenFileAction",           AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.OpenFileActionAsync()),            "Open File",        "Open a file into this editor"));
+            ActionManager.Instance.Register("actions.editor.SaveFileAction",           AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.SaveFileActionAsync()),            "Save",             "Save this editor's contents to the current file or a new file"));
+            ActionManager.Instance.Register("actions.editor.SaveFileAsAction",         AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.SaveFileAsActionAsync()),          "Save As...",       "Save this editor's contents to a new file"));
+            ActionManager.Instance.Register("actions.editor.UndoAction",               AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.UndoActionAsync()),                "Undo",             "Undo your last edit"));
+            ActionManager.Instance.Register("actions.editor.RedoAction",               AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.RedoActionAsync()),                "Redo",             "Redo your last edit"));
+            ActionManager.Instance.Register("actions.editor.CutAction",                AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.CutSelectionActionAsync()),        "Cut",              "Cut your selection or current line"));
+            ActionManager.Instance.Register("actions.editor.CopyAction",               AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.CopyLineOrSelectionActionAsync()), "Copy",             "Copy your selection or current line"));
+            ActionManager.Instance.Register("actions.editor.DuplicateAction",          AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.DuplicateSelectionActionAsync()),  "Duplicate",        "Duplicate your selection or current line"));
+            ActionManager.Instance.Register("actions.editor.PasteAction",              AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.PasteClipboardActionAsync()),      "Paste",            "Paste the clipboard into the editor"));
+            ActionManager.Instance.Register("actions.editor.DeleteSelectionAction",    AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.DeleteSelectionActionAsync()),     "Delete Selection", "Delete the selection you made"));
+            ActionManager.Instance.Register("actions.editor.SelectLineAction",         AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.SelectLineActionAsync()),          "Select Line",      "Selects an entire line"));
+            ActionManager.Instance.Register("actions.editor.AddOrRemoveCaretAtCursor", AnAction.Lambda(EditorAction<TextEditorViewModel>(async x => await x.AddOrRemoveCaretActionAsync())));
         }
 
-        public static async Task<TextEditorViewModel> OpenFileOrShowError(RZTextEditor editor, IEditorContainer container, string filePath) {
-            TextEditorViewModel viewModel = new TextEditorViewModel(editor, container);
+        public static async Task<TextEditorViewModel> OpenFileOrShowError(IEditorContainer container, string filePath) {
+            TextEditorViewModel viewModel = new TextEditorViewModel(container);
             try {
                 await viewModel.OpenFileActionAsync(filePath);
                 return viewModel;
@@ -183,9 +181,9 @@ namespace SharpPadV2.TextEditor {
             }
         }
 
-        private static Func<AnActionEvent, Task<bool>> EditorAction(Func<TextEditorViewModel, Task> action) {
+        private static Func<AnActionEventArgs, Task<bool>> EditorAction<T>(Func<T, Task> action) {
             return async (x) => {
-                if (x.DataContext is TextEditorViewModel editor) {
+                if (x.DataContext.TryGetContext(out T editor)) {
                     await action(editor);
                     return true;
                 }
@@ -223,7 +221,7 @@ namespace SharpPadV2.TextEditor {
             }
         }
 
-        public async Task OpenFileActionAsync() {
+        public async Task<bool> OpenFileActionAsync() {
             OpenFileDialog ofd = new OpenFileDialog {
                 Filter = Filter.Of().AddFilter("Text", "txt").AddAllFiles().ToString(),
                 Title = "Select a file to open",
@@ -234,28 +232,37 @@ namespace SharpPadV2.TextEditor {
 
             if (ofd.ShowDialog() == true) {
                 await this.OpenFileActionAsync(ofd.FileName);
+                return true;
             }
+
+            return false;
         }
 
-        public async Task SaveFileActionAsync() {
+        public async Task<bool> SaveFileActionAsync() {
             if (File.Exists(this.filePath) || this.HasSavedOnce) {
                 await this.SaveFileActionAsync(this.filePath);
+                return true;
             }
             else {
-                await this.SaveFileAsActionAsync();
+                return await this.SaveFileAsActionAsync();
             }
         }
 
-        public async Task SaveFileAsActionAsync() {
+        public async Task<bool> SaveFileAsActionAsync() {
             SaveFileDialog sfd = new SaveFileDialog() {
                 Filter = Filter.Of().AddFilter("Text", "txt").AddAllFiles().ToString(),
-                Title = "Save this document to a file"
+                Title = "Save this document to a file",
+                FileName = File.Exists(this.FilePath) ? this.FilePath : (this.editorName ?? "FileNameHere.txt")
             };
 
             if (sfd.ShowDialog() == true) {
                 this.FilePath = sfd.FileName;
                 this.EditorName = Path.GetFileName(this.FilePath);
                 await this.SaveFileActionAsync(this.FilePath);
+                return true;
+            }
+            else {
+                return false;
             }
         }
 
@@ -263,6 +270,7 @@ namespace SharpPadV2.TextEditor {
             try {
                 await this.SaveFile(filePath);
                 this.HasSavedOnce = true;
+                this.IsDirty = false;
             }
             catch (Exception e) {
                 await IoC.MessageDialogs.ShowMessageAsync("Failed to save", $"Failed to save document to {this.filePath}:\n{e.Message}");
@@ -285,7 +293,7 @@ namespace SharpPadV2.TextEditor {
             }
         }
 
-        public async Task CopySelectionActionAsync() {
+        public async Task CopyLineOrSelectionActionAsync() {
             try {
                 this.Editor.CopyLineOrSelection();
             }
@@ -294,9 +302,18 @@ namespace SharpPadV2.TextEditor {
             }
         }
 
+        public async Task DuplicateSelectionActionAsync() {
+            try {
+                this.Editor.DuplicateLineOrSelection();
+            }
+            catch (Exception e) {
+                await IoC.MessageDialogs.ShowMessageAsync("Failed to perform action", $"Could not duplicate line or selection: {e.Message}");
+            }
+        }
+
         public async Task PasteClipboardActionAsync() {
             try {
-                this.Editor.Paste();
+                this.Editor.PasteClipboard();
             }
             catch (Exception e) {
                 await IoC.MessageDialogs.ShowMessageAsync("Failed to perform action", $"Could not paste content: {e.Message}");
@@ -304,7 +321,7 @@ namespace SharpPadV2.TextEditor {
         }
 
         public Task DeleteSelectionActionAsync() {
-            this.Editor.SelectedText = "";
+            this.Editor.SetSelectedText("");
             return Task.CompletedTask;
         }
 
@@ -315,6 +332,15 @@ namespace SharpPadV2.TextEditor {
             catch (Exception e) {
                 await IoC.MessageDialogs.ShowMessageAsync("Failed to perform action", $"Could not select entire line: {e.Message}");
             }
+        }
+
+        public async Task AddOrRemoveCaretActionAsync() {
+            // try {
+            //     this.Editor.CaretManager.AddOrRemoveNewCaret();
+            // }
+            // catch (Exception e) {
+            //     await IoC.MessageDialogs.ShowMessageAsync("Failed to perform action", $"Could not add or remove caret: {e.Message}");
+            // }
         }
 
         public Task UndoActionAsync() {
@@ -355,21 +381,20 @@ namespace SharpPadV2.TextEditor {
         }
 
         public List<IContextEntry> GetContext(List<IContextEntry> list) {
-            list.Add(new CommandContextEntry("Undo", this.UndoCommand, null, null, "Undo your last modification"));
-            list.Add(new CommandContextEntry("Redo", this.RedoCommand, null, null, "Redo your last undo action"));
+            list.Add(new ActionContextEntry(this, "actions.editor.UndoAction"));
+            list.Add(new ActionContextEntry(this, "actions.editor.RedoAction"));
             list.Add(ContextEntrySeparator.Instance);
-            CommandContextEntry paste = new CommandContextEntry("Paste", this.PasteClipboardCommand, null, ShortcutGestureConverter.PathToGesture("Application/TextEditor/PasteShortcut"), "Paste the clipboard text to your caret/cursor");
             if (this.CanExecuteSelectionUsageCommand()) {
-                list.Add(new CommandContextEntry("Cut", this.CutSelectionCommand, null, ShortcutGestureConverter.PathToGesture("Application/TextEditor/CutShortcut"), "Cut the selected text (Delete and add to clipboard)"));
-                list.Add(new CommandContextEntry("Copy", this.CopySelectionCommand, null, ShortcutGestureConverter.PathToGesture("Application/TextEditor/CopyShortcut"), "Copy the selected text to clipboard"));
-                list.Add(paste);
-                list.Add(new CommandContextEntry("Delete", this.DeleteSelectionCommand, null, ShortcutGestureConverter.PathToGesture("Application/TextEditor/DeleteSelectionShortcut"), "Deletes the selected text"));
+                list.Add(new ActionContextEntry(this, "actions.editor.CutAction"));
+                list.Add(new ActionContextEntry(this, "actions.editor.CopyAction"));
+                list.Add(new ActionContextEntry(this, "actions.editor.PasteAction"));
+                list.Add(new ActionContextEntry(this, "actions.editor.DeleteSelectionAction"));
             }
             else {
-                list.Add(paste);
+                list.Add(new ActionContextEntry(this, "actions.editor.PasteAction"));
             }
 
-            list.Add(new CommandContextEntry("Select line", this.SelectCurrentLineCommand, null, ShortcutGestureConverter.PathToGesture("Application/TextEditor/SelectLineShortcut"), "Selects the entirety of the current line"));
+            list.Add(new ActionContextEntry(this, "actions.editor.SelectLineAction"));
             return list;
         }
 

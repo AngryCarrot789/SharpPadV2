@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using REghZy.Hotkeys.Shortcuts.Inputs;
-using REghZy.Hotkeys.Shortcuts.Usage;
+using SharpPadV2.Core.Shortcuts.Inputs;
+using SharpPadV2.Core.Shortcuts.Usage;
 
-namespace REghZy.Hotkeys.Shortcuts {
+namespace SharpPadV2.Core.Shortcuts {
     public interface IKeyboardShortcut : IShortcut {
         /// <summary>
         /// All of the Key Strokes that this shortcut contains

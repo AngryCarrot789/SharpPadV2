@@ -1,8 +1,8 @@
 using System;
 using System.Text;
 
-namespace REghZy.Hotkeys.Shortcuts.Inputs {
-    public readonly struct MouseStroke : IInputStroke, IEquatable<MouseStroke> {
+namespace SharpPadV2.Core.Shortcuts.Inputs {
+    public readonly struct MouseStroke : IInputStroke {
         /// <summary>
         /// A non-null function for converting a mouse button into a string representation
         /// </summary>
@@ -53,7 +53,7 @@ namespace REghZy.Hotkeys.Shortcuts.Inputs {
 
         public bool IsMouse => true;
 
-        public MouseStroke(int mouseButton, int modifiers, int clickCount = 1, int wheelDelta = 0, int customParam = 0) {
+        public MouseStroke(int mouseButton, int modifiers, int clickCount = -1, int wheelDelta = 0, int customParam = 0) {
             this.MouseButton = mouseButton;
             this.Modifiers = modifiers;
             this.ClickCount = clickCount;
@@ -61,19 +61,27 @@ namespace REghZy.Hotkeys.Shortcuts.Inputs {
             this.CustomParam = customParam;
         }
 
-        public bool Equals(MouseStroke other) {
-            return this.MouseButton == other.MouseButton && this.Modifiers == other.Modifiers &&
-                   this.ClickCount == other.ClickCount && this.WheelDelta == other.WheelDelta &&
-                   this.CustomParam == other.CustomParam;
+        public bool Equals(IInputStroke stroke) {
+            return stroke is MouseStroke other && this.Equals(other);
         }
 
         public override bool Equals(object obj) {
             return obj is MouseStroke other && this.Equals(other);
         }
 
+        public bool Equals(MouseStroke other) {
+            return this.MouseButton == other.MouseButton &&
+                   this.Modifiers == other.Modifiers &&
+                   (this.ClickCount == -1 || other.ClickCount == -1 || this.ClickCount == other.ClickCount) &&
+                   this.WheelDelta == other.WheelDelta &&
+                   this.CustomParam == other.CustomParam;
+        }
+
         public bool EqualsWithoutClick(MouseStroke other) {
-            return this.MouseButton == other.MouseButton && this.Modifiers == other.Modifiers &&
-                   this.WheelDelta == other.WheelDelta && this.CustomParam == other.CustomParam;
+            return this.MouseButton == other.MouseButton &&
+                   this.Modifiers == other.Modifiers &&
+                   this.WheelDelta == other.WheelDelta &&
+                   this.CustomParam == other.CustomParam;
         }
 
         public override int GetHashCode() {
@@ -99,7 +107,7 @@ namespace REghZy.Hotkeys.Shortcuts.Inputs {
             }
 
             sb.Append(MouseButtonToStringProvider(this.MouseButton));
-            if (appendClickCount) {
+            if (appendClickCount && this.ClickCount >= 0) {
                 sb.Append(" (x").Append(this.ClickCount).Append(')');
             }
 

@@ -32,7 +32,7 @@ namespace SharpPadV2.Core.AdvancedContextService.Base {
 
         public IEnumerable<IContextEntry> Children { get; }
 
-        public ContextEntry(IEnumerable<IContextEntry> children = null) {
+        public ContextEntry(IEnumerable<IContextEntry> children = null) : base(null) {
             this.Children = children;
         }
 

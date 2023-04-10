@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using REghZy.Hotkeys.Shortcuts.Managing;
-using SharpPadV2.Core;
+using SharpPadV2.Core.Shortcuts.Managing;
 using SharpPadV2.Core.Utils;
 
-namespace REghZy.Hotkeys.Shortcuts.ViewModels {
+namespace SharpPadV2.Core.Shortcuts.ViewModels {
     public class ShortcutGroupViewModel : BaseViewModel {
         private readonly EfficientObservableCollection<object> children;
 

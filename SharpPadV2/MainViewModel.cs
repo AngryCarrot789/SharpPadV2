@@ -1,4 +1,3 @@
-using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Windows.Input;
 using Microsoft.Win32;
 using SharpPadV2.Core;
 using SharpPadV2.Core.Interactivity;
+using SharpPadV2.Core.TextEditor;
 using SharpPadV2.Core.Views.Dialogs.FilePicking;
 using SharpPadV2.TextEditor;
 
@@ -34,13 +34,15 @@ namespace SharpPadV2 {
         public ICommand OpenFileCommand { get; }
         public AsyncRelayCommand<TextEditorViewModel> CloseEditorCommand { get; }
 
-        public RZTextEditor TextEditorHandleHandle { get; }
+        public ITextEditor Editor { get; }
 
-        public MainViewModel(RZTextEditor textEditorHandle) {
+        public MainViewModel(ITextEditor editor) {
             this.NewEmptyFileCommand = new RelayCommand(() => {
-                this.AddEditor(new TextEditorViewModel(this.TextEditorHandleHandle, this) {
+                this.AddEditor(new TextEditorViewModel(this) {
                     EditorName = $"New Document {this.editors.Count + 1}"
                 });
+
+                this.ActiveTextEditor = this.editors[this.editors.Count - 1];
             });
 
             this.OpenFileCommand = new AsyncRelayCommand(this.OpenFileActionAsync);
@@ -50,11 +52,11 @@ namespace SharpPadV2 {
                 }
             });
 
-            this.TextEditorHandleHandle = textEditorHandle;
+            this.Editor = editor;
             this.editors = new ObservableCollection<TextEditorViewModel>();
             this.Editors = new ReadOnlyObservableCollection<TextEditorViewModel>(this.editors);
 
-            TextEditorViewModel initial = new TextEditorViewModel(this.TextEditorHandleHandle, this) {
+            TextEditorViewModel initial = new TextEditorViewModel(this) {
                 EditorName = "New Document 1"
             };
 
@@ -81,7 +83,7 @@ namespace SharpPadV2 {
             };
 
             if (ofd.ShowDialog() == true) {
-                TextEditorViewModel editor = await TextEditorViewModel.OpenFileOrShowError(this.TextEditorHandleHandle, this, ofd.FileName);
+                TextEditorViewModel editor = await TextEditorViewModel.OpenFileOrShowError(this, ofd.FileName);
                 if (editor != null) {
                     this.AddEditor(editor);
                 }
@@ -102,14 +104,22 @@ namespace SharpPadV2 {
             this.IsEditorVisible = this.editors.Count > 0 && this.activeTextEditor != null;
         }
 
-        public Task<bool> CanDrop(string[] paths, FileDropType type) {
-            return Task.FromResult(paths.Any(File.Exists));
+        public async Task<bool> CanDrop(string[] paths, FileDropType type) {
+            if (paths.Any(File.Exists)) {
+                return true;
+            }
+
+            if (paths.Length > 0) {
+                await IoC.MessageDialogs.ShowMessageAsync("Invalid drop", paths.Length > 1 ? $"These item cannot be dropped" : $"This item canont be dropped: {paths[0]}");
+            }
+
+            return false;
         }
 
         public async Task<FileDropType> OnFilesDropped(string[] paths, FileDropType type) {
             bool hasAny = false;
             foreach (string file in paths) {
-                TextEditorViewModel editor = await TextEditorViewModel.OpenFileOrShowError(this.TextEditorHandleHandle, this, file);
+                TextEditorViewModel editor = await TextEditorViewModel.OpenFileOrShowError(this, file);
                 if (editor != null) {
                     this.AddEditor(editor);
                     hasAny = true;
