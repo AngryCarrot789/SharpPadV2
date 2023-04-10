@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using SharpPadV2.Core.Shortcuts.Inputs;
-using SharpPadV2.Core.Shortcuts.Usage;
+using REghZy.Hotkeys.Shortcuts.Inputs;
+using REghZy.Hotkeys.Shortcuts.Usage;
 
-namespace SharpPadV2.Core.Shortcuts {
+namespace REghZy.Hotkeys.Shortcuts {
     /// <summary>
     /// The base class for all shortcuts
     /// </summary>
@@ -48,5 +48,7 @@ namespace SharpPadV2.Core.Shortcuts {
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">This shortcut is empty (has no input strokes)</exception>
         IShortcutUsage CreateUsage();
+
+        bool IsPrimaryStroke(IInputStroke input);
     }
 }

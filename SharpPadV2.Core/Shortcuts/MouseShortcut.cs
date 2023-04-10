@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using SharpPadV2.Core.Shortcuts.Inputs;
-using SharpPadV2.Core.Shortcuts.Usage;
+using REghZy.Hotkeys.Shortcuts.Inputs;
+using REghZy.Hotkeys.Shortcuts.Usage;
 
-namespace SharpPadV2.Core.Shortcuts {
+namespace REghZy.Hotkeys.Shortcuts {
     public class MouseShortcut : IMouseShortcut {
         public static MouseShortcut EmptyMouseShortcut = new MouseShortcut();
 
@@ -48,6 +48,10 @@ namespace SharpPadV2.Core.Shortcuts {
 
         public IShortcutUsage CreateUsage() {
             return this.CreateMouseUsage();
+        }
+
+        public bool IsPrimaryStroke(IInputStroke input) {
+            return input is MouseStroke stroke && this.mouseStrokes[0].Equals(stroke);
         }
 
         public override string ToString() {

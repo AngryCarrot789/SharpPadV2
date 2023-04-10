@@ -1,15 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SharpPadV2.Core.Shortcuts.Inputs;
-using SharpPadV2.Core.Shortcuts.Usage;
+using REghZy.Hotkeys.Shortcuts.Inputs;
+using REghZy.Hotkeys.Shortcuts.Usage;
 
-namespace SharpPadV2.Core.Shortcuts.Managing {
+namespace REghZy.Hotkeys.Shortcuts.Managing {
     /// <summary>
     /// A shortcut processor. This is used for each window, and should only really be used by a single thread at a time
+    /// <para>
+    /// This processor will  manages its own input strokes and active usages
+    /// </para>
     /// </summary>
     public class ShortcutProcessor {
-        private List<GroupedShortcut> tempShortcutList;
+        private List<GroupedShortcut> shortcutList;
 
         /// <summary>
         /// A reference to the manager that created this processor
@@ -24,30 +27,47 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
         /// <summary>
         /// This processor's current data context for a focused element
         /// </summary>
-        public object CurrentDataContext { get; set; }
+        public IHasDataContext CurrentDataContext { get; set; }
 
         public ShortcutProcessor(ShortcutManager manager) {
             this.Manager = manager;
             this.ActiveUsages = new Dictionary<IShortcutUsage, GroupedShortcut>();
-            this.tempShortcutList = new List<GroupedShortcut>();
+            this.shortcutList = new List<GroupedShortcut>(5);
+        }
+
+        protected virtual void AccumulateShortcuts(IInputStroke stroke, string focusedGroup) {
+            this.Manager.Root.CollectShortcutsWithPrimaryStroke(stroke, focusedGroup, this.shortcutList);
+        }
+
+        protected virtual List<GroupedShortcut> GetInstantActivationShortcuts() {
+            List<GroupedShortcut> instantActivate = this.shortcutList.Where(x => !x.Shortcut.HasSecondaryStrokes).ToList();
+            this.shortcutList.RemoveAll(x => !x.Shortcut.HasSecondaryStrokes);
+            return instantActivate;
+        }
+
+        protected virtual async Task<bool> OnUnexpectedCompletedUsage(IShortcutUsage usage, GroupedShortcut shortcut) {
+            try {
+                return await this.OnSecondShortcutUsageCompleted(usage, shortcut);
+            }
+            finally {
+                this.ActiveUsages.Clear();
+            }
         }
 
         public async Task<bool> OnKeyStroke(string focusedGroup, KeyStroke stroke) {
             if (this.ActiveUsages.Count < 1) {
-                this.Manager.Root.CollectShortcutsWithPrimaryStroke(stroke, focusedGroup, this.tempShortcutList);
-                if (this.tempShortcutList.Count < 1) {
+                this.AccumulateShortcuts(stroke, focusedGroup);
+                if (this.shortcutList.Count < 1) {
                     return this.OnNoSuchShortcutForKeyStroke(focusedGroup, stroke);
                 }
 
                 bool result = false;
-                List<GroupedShortcut> instantActivate = this.tempShortcutList.Where(x => !x.Shortcut.HasSecondaryStrokes).ToList();
-                this.tempShortcutList.RemoveAll(x => !x.Shortcut.HasSecondaryStrokes);
-
+                List<GroupedShortcut> instantActivate = this.GetInstantActivationShortcuts();
                 foreach (GroupedShortcut s in instantActivate) {
                     result |= await this.OnShortcutActivated(s);
                 }
 
-                if (this.tempShortcutList.Count < 1) {
+                if (this.shortcutList.Count < 1) {
                     return result;
                 }
 
@@ -56,7 +76,7 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
                 // In most cases, the list should only ever have 1 item with no secondary inputs, or be full of
                 // shortcuts that all have secondary inputs (because logically, that's how a key map should work...
                 // why would you want multiple shortcuts to activate on the same key stroke?)
-                foreach (GroupedShortcut mc in this.tempShortcutList) {
+                foreach (GroupedShortcut mc in this.shortcutList) {
                     if (mc.Shortcut is IKeyboardShortcut shortcut) {
                         IKeyboardShortcutUsage usage = shortcut.CreateKeyUsage();
                         this.ActiveUsages[usage] = mc;
@@ -64,7 +84,7 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
                     }
                 }
 
-                this.tempShortcutList.Clear();
+                this.shortcutList.Clear();
                 if (this.ActiveUsages.Count > 0) {
                     return result | this.OnShortcutUsagesCreated();
                 }
@@ -73,19 +93,18 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
                 }
             }
             else {
-                List<KeyValuePair<IShortcutUsage, GroupedShortcut>> validPairs = new List<KeyValuePair<IShortcutUsage, GroupedShortcut>>();
+                List<KeyValuePair<IShortcutUsage, GroupedShortcut>> valid = new List<KeyValuePair<IShortcutUsage, GroupedShortcut>>();
                 foreach (KeyValuePair<IShortcutUsage, GroupedShortcut> pair in this.ActiveUsages) {
                     // Just in case, check if it's already completed. By default, it never should be
                     if (pair.Key.IsCompleted) {
-                        this.ActiveUsages.Clear();
-                        return await this.OnSecondShortcutUsageCompleted(pair.Key, pair.Value);
+                        return await this.OnUnexpectedCompletedUsage(pair.Key, pair.Value);
                     }
 
                     bool strokeAccepted;
                     if (pair.Key is IKeyboardShortcutUsage usage) {
                         if (usage.IsCurrentStrokeKeyBased) {
                             if (this.ShouldIgnoreKeyStroke(usage, pair.Value, stroke, usage.CurrentKeyStroke)) {
-                                validPairs.Add(pair);
+                                valid.Add(pair);
                                 continue;
                             }
 
@@ -93,7 +112,7 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
                         }
                         else if (usage.PreviousStroke is KeyStroke lastKey) { // the below check is needed for MouseKeyboardShortcutUsages to work
                             if (this.ShouldIgnoreKeyStroke(usage, pair.Value, stroke, lastKey)) {
-                                validPairs.Add(pair);
+                                valid.Add(pair);
                                 continue;
                             }
 
@@ -117,20 +136,20 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
                             }
                         }
                         else if (this.OnSecondShortcutUsageProgressed(pair.Key, pair.Value)) {
-                            validPairs.Add(pair);
+                            valid.Add(pair);
                         }
                     }
                     else if (!this.OnCancelUsageForNoSuchNextKeyStroke(pair.Key, pair.Value, stroke)) {
-                        validPairs.Add(pair);
+                        valid.Add(pair);
                     }
                 }
 
                 this.ActiveUsages.Clear();
-                if (validPairs.Count < 1) {
+                if (valid.Count < 1) {
                     return this.OnNoSuchShortcutForKeyStroke(focusedGroup, stroke);
                 }
                 else {
-                    foreach (KeyValuePair<IShortcutUsage, GroupedShortcut> pair in validPairs) {
+                    foreach (KeyValuePair<IShortcutUsage, GroupedShortcut> pair in valid) {
                         this.ActiveUsages[pair.Key] = pair.Value;
                     }
 
@@ -141,20 +160,22 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
 
         public async Task<bool> OnMouseStroke(string focusedGroup, MouseStroke stroke) {
             if (this.ActiveUsages.Count < 1) {
-                this.Manager.Root.CollectShortcutsWithPrimaryStroke(stroke, focusedGroup, this.tempShortcutList);
-                if (this.tempShortcutList.Count < 1) {
+                this.AccumulateShortcuts(stroke, focusedGroup);
+                if (this.shortcutList.Count < 1) {
                     return this.OnNoSuchShortcutForMouseStroke(focusedGroup, stroke);
                 }
 
                 bool result = false;
-                List<GroupedShortcut> instantActivate = this.tempShortcutList.Where(x => x.Shortcut.HasSecondaryStrokes).ToList();
-                this.tempShortcutList.RemoveAll(x => !x.Shortcut.HasSecondaryStrokes);
-
+                List<GroupedShortcut> instantActivate = this.GetInstantActivationShortcuts();
                 foreach (GroupedShortcut s in instantActivate) {
                     result |= await this.OnShortcutActivated(s);
                 }
 
-                foreach (GroupedShortcut mc in this.tempShortcutList) {
+                if (this.shortcutList.Count < 1) {
+                    return result;
+                }
+
+                foreach (GroupedShortcut mc in this.shortcutList) {
                     if (mc.Shortcut is IMouseShortcut shortcut) {
                         IMouseShortcutUsage usage = shortcut.CreateMouseUsage();
                         this.ActiveUsages[usage] = mc;
@@ -162,7 +183,7 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
                     }
                 }
 
-                this.tempShortcutList.Clear();
+                this.shortcutList.Clear();
                 if (this.ActiveUsages.Count > 0) {
                     return result | this.OnShortcutUsagesCreated();
                 }
@@ -171,12 +192,11 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
                 }
             }
             else {
-                List<KeyValuePair<IShortcutUsage, GroupedShortcut>> validPairs = new List<KeyValuePair<IShortcutUsage, GroupedShortcut>>();
+                List<KeyValuePair<IShortcutUsage, GroupedShortcut>> valid = new List<KeyValuePair<IShortcutUsage, GroupedShortcut>>();
                 foreach (KeyValuePair<IShortcutUsage, GroupedShortcut> pair in this.ActiveUsages) {
                     // Just in case, check if it's already completed. By default, it never should be
                     if (pair.Key.IsCompleted) {
-                        this.ActiveUsages.Clear();
-                        return await this.OnSecondShortcutUsageCompleted(pair.Key, pair.Value);
+                        return await this.OnUnexpectedCompletedUsage(pair.Key, pair.Value);
                     }
 
                     bool strokeAccepted;
@@ -211,20 +231,20 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
                             }
                         }
                         else if (this.OnSecondShortcutUsageProgressed(pair.Key, pair.Value)) {
-                            validPairs.Add(pair);
+                            valid.Add(pair);
                         }
                     }
                     else if (!this.OnCancelUsageForNoSuchNextMouseStroke(pair.Key, pair.Value, stroke)) {
-                        validPairs.Add(pair);
+                        valid.Add(pair);
                     }
                 }
 
                 this.ActiveUsages.Clear();
-                if (validPairs.Count < 1) {
+                if (valid.Count < 1) {
                     return this.OnNoSuchShortcutForMouseStroke(focusedGroup, stroke);
                 }
                 else {
-                    foreach (KeyValuePair<IShortcutUsage, GroupedShortcut> pair in validPairs) {
+                    foreach (KeyValuePair<IShortcutUsage, GroupedShortcut> pair in valid) {
                         this.ActiveUsages[pair.Key] = pair.Value;
                     }
 
@@ -260,7 +280,7 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
         /// <param name="stroke">The key stroke that was received</param>
         /// <returns>Whether to cancel the usage or not. True = cancel, False = keep</returns>
         public virtual bool OnCancelUsageForNoSuchNextKeyStroke(IShortcutUsage usage, GroupedShortcut shortcut, in KeyStroke stroke) {
-            return true;
+            return this.OnCancelUsage(usage, shortcut);
         }
 
         /// <summary>
@@ -270,6 +290,10 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
         /// <param name="stroke">The mouse stroke that was received</param>
         /// <returns>Whether to cancel the usage or not. True = cancel, False = keep</returns>
         public virtual bool OnCancelUsageForNoSuchNextMouseStroke(IShortcutUsage usage, GroupedShortcut shortcut, in MouseStroke stroke) {
+            return this.OnCancelUsage(usage, shortcut);
+        }
+
+        public virtual bool OnCancelUsage(IShortcutUsage usage, GroupedShortcut shortcut) {
             return true;
         }
 

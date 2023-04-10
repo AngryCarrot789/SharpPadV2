@@ -1,12 +1,12 @@
 using System;
 using System.Text;
 
-namespace SharpPadV2.Core.Shortcuts.Managing {
+namespace REghZy.Hotkeys.Shortcuts.Managing {
     /// <summary>
     /// A class used to store a reference to a <see cref="Shortcut"/> and its
     /// owning <see cref="ShortcutGroup"/>, and also other shortcut data
     /// </summary>
-    public class GroupedShortcut {
+    public sealed class GroupedShortcut {
         /// <summary>
         /// The collection that owns this managed shortcut
         /// </summary>
@@ -40,7 +40,7 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
         /// <summary>
         /// The ID for an optional action that this shortcut will trigger when activated
         /// </summary>
-        public string ActionID { get; set; }
+        public string ActionId { get; set; }
 
         public string Path { get; }
 

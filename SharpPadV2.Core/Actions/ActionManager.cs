@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SharpPadV2.Core.Actions {
+namespace REghZy.Hotkeys.Actions {
     public class ActionManager {
-        public static ActionManager Instance { get; }
+        public static ActionManager Instance { get; set; }
 
         private readonly Dictionary<string, AnAction> actions;
 
@@ -27,16 +27,43 @@ namespace SharpPadV2.Core.Actions {
             this.actions[id] = action;
         }
 
-        public AnAction GetAction(string id) {
-            return this.actions.TryGetValue(id, out AnAction action) ? action : null;
+        public virtual AnAction GetAction(string id) {
+            return id != null && this.actions.TryGetValue(id, out AnAction action) ? action : null;
         }
 
-        public async Task<bool> Execute(string id, object dataContext) {
+        public virtual async Task<bool> Execute(string id, IHasDataContext context) {
+            if (context == null) {
+                throw new Exception("Context cannot be null");
+            }
+
             if (this.actions.TryGetValue(id, out AnAction action)) {
-                return await action.Execute(new AnActionEvent(dataContext));
+                context.SetCustomData("ActionId", id);
+                AnActionEventArgs args = new AnActionEventArgs(context);
+
+                #if DEBUG
+                return await action.Execute(args);
+                #else
+                try {
+                    return await action.Execute(args);
+                }
+                catch (Exception e) {
+                    return await this.OnActionException(id, action, args, e);
+                }
+                #endif
             }
 
             return false;
+        }
+
+        protected virtual async Task<bool> OnActionException(string actionId, AnAction action, AnActionEventArgs args, Exception e) {
+            #if DEBUG
+            string msg = $"An exception occurred while executing {actionId}:\n{e}";
+            #else
+            string msg = $"An exception occurred while executing {actionId}";
+            #endif
+
+            await IoC.MessageDialogs.ShowMessageAsync("Error performing action", msg);
+            return true;
         }
     }
 }

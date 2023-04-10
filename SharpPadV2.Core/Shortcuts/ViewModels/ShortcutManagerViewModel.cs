@@ -1,6 +1,7 @@
-using SharpPadV2.Core.Shortcuts.Managing;
+using REghZy.Hotkeys.Shortcuts.Managing;
+using SharpPadV2.Core;
 
-namespace SharpPadV2.Core.Shortcuts.ViewModels {
+namespace REghZy.Hotkeys.Shortcuts.ViewModels {
     public class ShortcutManagerViewModel : BaseViewModel {
         private ShortcutGroupViewModel root;
         public ShortcutGroupViewModel Root {

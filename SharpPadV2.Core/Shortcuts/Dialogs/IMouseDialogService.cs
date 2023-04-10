@@ -1,6 +1,6 @@
-using SharpPadV2.Core.Shortcuts.Inputs;
+using REghZy.Hotkeys.Shortcuts.Inputs;
 
-namespace SharpPadV2.Core.Shortcuts.Dialogs {
+namespace REghZy.Hotkeys.Shortcuts.Dialogs {
     public interface IMouseDialogService {
         MouseStroke? ShowGetMouseStrokeDialog();
     }

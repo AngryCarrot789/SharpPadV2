@@ -1,7 +1,8 @@
 using System;
-using SharpPadV2.Core.Shortcuts.Inputs;
+using REghZy.Hotkeys.Shortcuts.Inputs;
+using SharpPadV2.Core;
 
-namespace SharpPadV2.Core.Shortcuts.ViewModels {
+namespace REghZy.Hotkeys.Shortcuts.ViewModels {
     public abstract class InputStrokeViewModel : BaseViewModel {
         public static Func<KeyStrokeViewModel, string> KeyToReadableString { get; set; } = (x) => x.ToKeyStroke().ToString();
         public static Func<MouseStrokeViewModel, string> MouseToReadableString { get; set; } = (x) => x.ToMouseStroke().ToString();

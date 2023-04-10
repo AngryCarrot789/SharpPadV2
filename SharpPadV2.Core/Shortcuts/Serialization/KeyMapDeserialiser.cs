@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Serialization;
-using SharpPadV2.Core.Shortcuts.Inputs;
-using SharpPadV2.Core.Shortcuts.Managing;
+using REghZy.Hotkeys.Shortcuts.Inputs;
+using REghZy.Hotkeys.Shortcuts.Managing;
 
-namespace SharpPadV2.Core.Shortcuts.Serialization {
+namespace REghZy.Hotkeys.Shortcuts.Serialization {
     public abstract class KeyMapDeserialiser {
         private static readonly XmlSerializer Serializer;
 
@@ -113,7 +113,7 @@ namespace SharpPadV2.Core.Shortcuts.Serialization {
                     }
 
                     GroupedShortcut managed = realKeyGroup.AddShortcut(cut.Name, shortcut, cut.IsGlobalBool);
-                    managed.ActionID = cut.ActionID;
+                    managed.ActionId = cut.ActionId;
                     managed.Description = cut.Description;
                     managed.DisplayName = cut.DisplayName;
                 }
@@ -145,7 +145,7 @@ namespace SharpPadV2.Core.Shortcuts.Serialization {
                 Shortcut cut = new Shortcut {
                     Name = shortcut.Name,
                     Description = shortcut.Description,
-                    ActionID = shortcut.ActionID,
+                    ActionId = shortcut.ActionId,
                     IsGlobal = SerialiseObject(shortcut.IsGlobal, false),
                     Strokes = new List<object>()
                 };

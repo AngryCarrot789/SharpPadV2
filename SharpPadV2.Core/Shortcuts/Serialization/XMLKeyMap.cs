@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace SharpPadV2.Core.Shortcuts.Serialization {
+namespace REghZy.Hotkeys.Shortcuts.Serialization {
     [XmlRoot("KeyMap")]
     public class KeyMap : Group {
 
@@ -23,11 +23,11 @@ namespace SharpPadV2.Core.Shortcuts.Serialization {
         public bool InheritBool => !string.IsNullOrWhiteSpace(this.InheritFromParent) && this.InheritFromParent.ToLower().Equals("true");
     }
 
-    public class Shortcut {
+    public class  Shortcut {
         [XmlAttribute("Name")]        public string Name { get; set; }
         [XmlAttribute("DisplayName")] public string DisplayName { get; set; }
         [XmlAttribute("Description")] public string Description { get; set; }
-        [XmlAttribute("ActionID")]    public string ActionID { get; set; }
+        [XmlAttribute("ActionId")]    public string ActionId { get; set; }
         [XmlAttribute("IsGlobal")]    public string IsGlobal { get; set; }
 
         [XmlElement("Keystroke", Type = typeof(Keystroke))]

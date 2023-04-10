@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
-using SharpPadV2.Core.AdvancedContextService;
+using REghZy.Hotkeys.Shortcuts.Inputs;
+using REghZy.Hotkeys.Shortcuts.Managing;
+using SharpPadV2.Core;
 using SharpPadV2.Core.AdvancedContextService.Base;
-using SharpPadV2.Core.Shortcuts.Inputs;
-using SharpPadV2.Core.Shortcuts.Managing;
 
-namespace SharpPadV2.Core.Shortcuts.ViewModels {
+namespace REghZy.Hotkeys.Shortcuts.ViewModels {
     public class ShortcutViewModel : BaseViewModel, IContextProvider {
         public GroupedShortcut ShortcutRefernce { get; set; }
 

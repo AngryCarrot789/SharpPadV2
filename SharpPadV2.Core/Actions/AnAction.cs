@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace SharpPadV2.Core.Actions {
+namespace REghZy.Hotkeys.Actions {
     public abstract class AnAction {
         private static readonly Func<string> ProvideNullString = () => null;
 
@@ -9,28 +9,34 @@ namespace SharpPadV2.Core.Actions {
 
         public Func<string> Description { get; }
 
-        public Func<string> InputGestureText { get; }
-
-        protected AnAction(Func<string> header, Func<string> description, Func<string> inputGestureText = null) {
+        protected AnAction(Func<string> header, Func<string> description) {
             this.Header = header ?? ProvideNullString;
             this.Description = description ?? ProvideNullString;
-            this.InputGestureText = inputGestureText ?? ProvideNullString;
         }
 
-        public static AnAction Lambda(Func<AnActionEvent, Task<bool>> action, Func<string> header = null, Func<string> description = null, Func<string> inputGestureText = null) {
-            return new LambdaAction(header, description, inputGestureText, action);
+        public static AnAction Lambda(Func<AnActionEventArgs, Task<bool>> action, string header = null, string description = null) {
+            return new LambdaAction(() => header, () => description, action);
         }
 
-        public abstract Task<bool> Execute(AnActionEvent e);
+        public static AnAction LambdaI18N(Func<AnActionEventArgs, Task<bool>> action, Func<string> header = null, Func<string> description = null) {
+            return new LambdaAction(header, description, action);
+        }
+
+        /// <summary>
+        /// Executes this specific action with the given action event args
+        /// </summary>
+        /// <param name="e">Event arguments that this action can use</param>
+        /// <returns></returns>
+        public abstract Task<bool> Execute(AnActionEventArgs e);
 
         private class LambdaAction : AnAction {
-            public Func<AnActionEvent, Task<bool>> MyAction { get; }
+            public Func<AnActionEventArgs, Task<bool>> MyAction { get; }
 
-            public LambdaAction(Func<string> header, Func<string> description, Func<string> inputGestureText, Func<AnActionEvent, Task<bool>> action) : base(header, description, inputGestureText) {
+            public LambdaAction(Func<string> header, Func<string> description, Func<AnActionEventArgs, Task<bool>> action) : base(header, description) {
                 this.MyAction = action ?? throw new ArgumentNullException(nameof(action), "Action function cannot be null");
             }
 
-            public override Task<bool> Execute(AnActionEvent e) {
+            public override Task<bool> Execute(AnActionEventArgs e) {
                 return this.MyAction(e);
             }
         }

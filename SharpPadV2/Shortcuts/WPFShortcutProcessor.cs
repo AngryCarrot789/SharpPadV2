@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using SharpPadV2.Core;
 using SharpPadV2.Core.Actions;
+using SharpPadV2.Core.AdvancedContextService;
 using SharpPadV2.Core.Shortcuts.Inputs;
 using SharpPadV2.Core.Shortcuts.Managing;
 using SharpPadV2.Core.Shortcuts.Usage;
@@ -12,9 +13,9 @@ using SharpPadV2.Core.Utils;
 
 namespace SharpPadV2.Shortcuts {
     public class AppShortcutProcessor : ShortcutProcessor {
-        public new AppShortcutManager Manager => (AppShortcutManager) base.Manager;
+        public new WPFShortcutManager Manager => (WPFShortcutManager) base.Manager;
 
-        public string CurrentInputBindingUsageID { get; set; } = AppShortcutManager.DEFAULT_USAGE_ID;
+        public string CurrentInputBindingUsageID { get; set; } = WPFShortcutManager.DEFAULT_USAGE_ID;
 
         public AppShortcutProcessor(ShortcutManager manager) : base(manager) {
 
@@ -38,8 +39,8 @@ namespace SharpPadV2.Shortcuts {
                 UIFocusGroup.ProcessFocusGroupChange(focused);
 
                 try {
-                    this.CurrentInputBindingUsageID = UIFocusGroup.GetUsageID(focused) ?? AppShortcutManager.DEFAULT_USAGE_ID;
-                    this.SetupDataContext(focused);
+                    this.CurrentInputBindingUsageID = UIFocusGroup.GetUsageID(focused) ?? WPFShortcutManager.DEFAULT_USAGE_ID;
+                    this.SetupDataContext(sender, focused);
                     MouseStroke stroke = new MouseStroke((int) e.ChangedButton, (int) Keyboard.Modifiers, e.ClickCount);
                     if (await this.OnMouseStroke(UIFocusGroup.FocusedGroupPath, stroke)) {
                         e.Handled = true;
@@ -47,7 +48,7 @@ namespace SharpPadV2.Shortcuts {
                 }
                 finally {
                     this.CurrentDataContext = null;
-                    this.CurrentInputBindingUsageID = AppShortcutManager.DEFAULT_USAGE_ID;
+                    this.CurrentInputBindingUsageID = WPFShortcutManager.DEFAULT_USAGE_ID;
                 }
             }
         }
@@ -56,18 +57,18 @@ namespace SharpPadV2.Shortcuts {
             if (e.OriginalSource is DependencyObject focused && CanProcessEvent(focused, isPreviewEvent)) {
                 int button;
                 if (e.Delta < 0) {
-                    button = AppShortcutManager.BUTTON_WHEEL_DOWN;
+                    button = WPFShortcutManager.BUTTON_WHEEL_DOWN;
                 }
                 else if (e.Delta > 0) {
-                    button = AppShortcutManager.BUTTON_WHEEL_UP;
+                    button = WPFShortcutManager.BUTTON_WHEEL_UP;
                 }
                 else {
                     return;
                 }
 
                 try {
-                    this.CurrentInputBindingUsageID = UIFocusGroup.GetUsageID(focused) ?? AppShortcutManager.DEFAULT_USAGE_ID;
-                    this.SetupDataContext(focused);
+                    this.CurrentInputBindingUsageID = UIFocusGroup.GetUsageID(focused) ?? WPFShortcutManager.DEFAULT_USAGE_ID;
+                    this.SetupDataContext(sender, focused);
                     MouseStroke stroke = new MouseStroke(button, (int) Keyboard.Modifiers, 0, e.Delta);
                     if (await this.OnMouseStroke(UIFocusGroup.FocusedGroupPath, stroke)) {
                         e.Handled = true;
@@ -75,7 +76,7 @@ namespace SharpPadV2.Shortcuts {
                 }
                 finally {
                     this.CurrentDataContext = null;
-                    this.CurrentInputBindingUsageID = AppShortcutManager.DEFAULT_USAGE_ID;
+                    this.CurrentInputBindingUsageID = WPFShortcutManager.DEFAULT_USAGE_ID;
                 }
             }
         }
@@ -100,8 +101,8 @@ namespace SharpPadV2.Shortcuts {
             }
 
             try {
-                this.CurrentInputBindingUsageID = UIFocusGroup.GetUsageID(focused) ?? AppShortcutManager.DEFAULT_USAGE_ID;
-                this.SetupDataContext(focused);
+                this.CurrentInputBindingUsageID = UIFocusGroup.GetUsageID(focused) ?? WPFShortcutManager.DEFAULT_USAGE_ID;
+                this.SetupDataContext(sender, focused);
                 KeyStroke stroke = new KeyStroke((int) key, (int) Keyboard.Modifiers, isRelease);
                 if (await processor.OnKeyStroke(UIFocusGroup.FocusedGroupPath, stroke)) {
                     e.Handled = true;
@@ -109,20 +110,30 @@ namespace SharpPadV2.Shortcuts {
             }
             finally {
                 this.CurrentDataContext = null;
-                this.CurrentInputBindingUsageID = AppShortcutManager.DEFAULT_USAGE_ID;
+                this.CurrentInputBindingUsageID = WPFShortcutManager.DEFAULT_USAGE_ID;
             }
         }
 
-        public void SetupDataContext(DependencyObject obj) {
+        public void SetupDataContext(object sender, DependencyObject obj) {
+            DefaultDataContext context = new DefaultDataContext();
+            if (obj is IHaveDataContext) {
+                context.Merge((IHaveDataContext) obj);
+            }
+
             if (obj is FrameworkElement element) {
-                this.CurrentDataContext = element.DataContext;
-                if (this.CurrentDataContext is IHasDataContext iHas) {
-                    this.CurrentDataContext = iHas.DataContext;
+                object elementContext = element.DataContext;
+                if (elementContext is IHaveDataContext dc) {
+                    context.Merge(dc);
                 }
+                else if (elementContext != null) {
+                    context.AddContext(elementContext);
+                }
+
+                context.AddContext(element);
             }
-            else if (obj is IHasDataContext iHas) {
-                this.CurrentDataContext = iHas.DataContext;
-            }
+
+            context.AddContext(sender);
+            this.CurrentDataContext = context;
         }
 
         public override async Task<bool> OnShortcutActivated(GroupedShortcut shortcut) {
@@ -132,8 +143,8 @@ namespace SharpPadV2.Shortcuts {
             // }
 
             bool finalResult = false;
-            if (AppShortcutManager.InputBindingCallbackMap.TryGetValue(shortcut.Path, out Dictionary<string, List<ShortcutActivateHandler>> usageMap)) {
-                if ((shortcut.IsGlobal || shortcut.Group.IsGlobal) && usageMap.TryGetValue(AppShortcutManager.DEFAULT_USAGE_ID, out List<ShortcutActivateHandler> callbacks2) && callbacks2.Count > 0) {
+            if (WPFShortcutManager.InputBindingCallbackMap.TryGetValue(shortcut.Path, out Dictionary<string, List<ShortcutActivateHandler>> usageMap)) {
+                if ((shortcut.IsGlobal || shortcut.Group.IsGlobal) && usageMap.TryGetValue(WPFShortcutManager.DEFAULT_USAGE_ID, out List<ShortcutActivateHandler> callbacks2) && callbacks2.Count > 0) {
                     IoC.BroadcastShortcutActivity($"Activated global shortcut: {shortcut}. Calling {callbacks2.Count} callbacks...");
                     foreach (ShortcutActivateHandler callback in callbacks2) {
                         finalResult |= await callback(this, shortcut);
@@ -149,8 +160,8 @@ namespace SharpPadV2.Shortcuts {
                 }
             }
 
-            if (!finalResult && !string.IsNullOrWhiteSpace(shortcut.ActionID)) {
-                finalResult = await ActionManager.Instance.Execute(shortcut.ActionID, this.CurrentDataContext);
+            if (!finalResult && !string.IsNullOrWhiteSpace(shortcut.ActionId)) {
+                finalResult = await ActionManager.Instance.Execute(shortcut.ActionId, this.CurrentDataContext);
             }
 
             return finalResult;

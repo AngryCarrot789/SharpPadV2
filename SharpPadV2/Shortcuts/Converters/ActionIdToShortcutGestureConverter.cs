@@ -4,12 +4,13 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Data;
+using SharpPadV2.Converters;
+using SharpPadV2.Core.Actions;
 using SharpPadV2.Core.Shortcuts.Managing;
-using SharpPadV2.Shortcuts;
 
-namespace SharpPadV2.Converters {
-    public class ShortcutGestureConverter : SpecialValueConverter<ShortcutGestureConverter>, IValueConverter, INotifyPropertyChanged {
-        public string NoSuchShortcutText { get; set; } = null;
+namespace SharpPadV2.Shortcuts.Converters {
+    public class ActionToShortcutGestureConverter : SpecialValueConverter<ActionToShortcutGestureConverter>, IValueConverter, INotifyPropertyChanged {
+        public string NoSuchActionText { get; set; } = null;
 
         public int Version { get; private set; }
 
@@ -19,15 +20,20 @@ namespace SharpPadV2.Converters {
         }
 
         public override object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            if (!(parameter is string path)) {
-                throw new Exception("Parameter is not a shortcut string: " + parameter);
+            if (!(value is string id)) {
+                throw new Exception("Value is not a shortcut string");
             }
 
-            return PathToGesture(path, this.NoSuchShortcutText) ?? DependencyProperty.UnsetValue;
+            return ActionIdToGesture(id, this.NoSuchActionText) ?? DependencyProperty.UnsetValue;
         }
 
-        public static string PathToGesture(string path, string fallback = null) {
-            GroupedShortcut shortcut = AppShortcutManager.Instance.FindShortcutByPath(path);
+        public static string ActionIdToGesture(string id, string fallback = null) {
+            AnAction action = ActionManager.Instance.GetAction(id);
+            if (action == null) {
+                return fallback;
+            }
+
+            GroupedShortcut shortcut = WPFShortcutManager.Instance.FindFirstShortcutByAction(id);
             return shortcut == null ? fallback : shortcut.Shortcut.ToString();
         }
 

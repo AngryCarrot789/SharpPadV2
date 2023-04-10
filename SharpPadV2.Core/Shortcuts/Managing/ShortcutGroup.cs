@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
-using SharpPadV2.Core.Shortcuts.Inputs;
-using SharpPadV2.Core.Shortcuts.Serialization;
+using REghZy.Hotkeys.Shortcuts.Inputs;
+using REghZy.Hotkeys.Shortcuts.Serialization;
 using SharpPadV2.Core.Utils;
 
-namespace SharpPadV2.Core.Shortcuts.Managing {
+namespace REghZy.Hotkeys.Shortcuts.Managing {
     /// <summary>
     /// A collection of shortcuts
     /// </summary>
-    public class ShortcutGroup {
+    public sealed class ShortcutGroup {
         public const char SeparatorChar = '/';
         public const string SeparatorCharString = "/";
 
@@ -130,7 +130,7 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
             bool requireGlobal = !this.IsGlobal && !this.IsValidSearchForGroup(focus);
             foreach (GroupedShortcut shortcut in this.shortcuts) {
                 if (!requireGlobal || shortcut.IsGlobal) {
-                    if (shortcut.Shortcut != null && !shortcut.Shortcut.IsEmpty && shortcut.Shortcut.PrimaryStroke.Equals(stroke)) {
+                    if (shortcut.Shortcut != null && !shortcut.Shortcut.IsEmpty && shortcut.Shortcut.IsPrimaryStroke(stroke)) {
                         list.Add(shortcut);
                     }
                 }
@@ -143,7 +143,23 @@ namespace SharpPadV2.Core.Shortcuts.Managing {
 
         private static bool IsValidSearchForGroup(string path, string focused, bool inherit) {
             return path != null && focused != null && (inherit ? focused.StartsWith(path) : focused.Equals(path));
-            // return path != null && focused != null && focused.StartsWith(path);
+        }
+
+        public GroupedShortcut FindFirstShortcutByAction(string actionId) {
+            foreach (GroupedShortcut shortcut in this.shortcuts) {
+                if (actionId.Equals(shortcut.ActionId)) {
+                    return shortcut;
+                }
+            }
+
+            foreach (ShortcutGroup group in this.Groups) {
+                GroupedShortcut result = group.FindFirstShortcutByAction(actionId);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            return null;
         }
 
         public ShortcutGroup GetGroupByName(string name) {

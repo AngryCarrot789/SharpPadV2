@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using SharpPadV2.Core.Shortcuts.Inputs;
+using REghZy.Hotkeys.Shortcuts.Inputs;
 
-namespace SharpPadV2.Core.Shortcuts.Usage {
+namespace REghZy.Hotkeys.Shortcuts.Usage {
     public class KeyboardShortcutUsage : IKeyboardShortcutUsage {
         private LinkedListNode<KeyStroke> currentStroke;
 

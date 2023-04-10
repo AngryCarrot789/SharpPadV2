@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace SharpPadV2.Core.Shortcuts.Inputs {
+namespace REghZy.Hotkeys.Shortcuts.Inputs {
     /// <summary>
     /// Represents a key stroke, as in, a key press or release which may have modifier keys present
     /// <para>
@@ -67,14 +67,26 @@ namespace SharpPadV2.Core.Shortcuts.Inputs {
         }
 
         public override string ToString() {
+            return this.ToString(false, true);
+        }
+
+        public string ToString(bool appendIsReleaseOnly, bool useSpacers) {
             StringBuilder sb = new StringBuilder();
             string mod = ModifierToStringProvider(this.Modifiers);
             if (mod.Length > 0) {
-                sb.Append(mod).Append(" + ");
+                sb.Append(mod).Append(useSpacers ? " + " : "+");
             }
 
-            sb.Append(KeyCodeToStringProvider(this.KeyCode)).Append(' ');
-            sb.Append(this.IsKeyRelease ? "(Release)" : "(Press)").Append(' ');
+            sb.Append(KeyCodeToStringProvider(this.KeyCode));
+            if (appendIsReleaseOnly) {
+                if (this.IsKeyRelease) {
+                    sb.Append(" (Release)");
+                }
+            }
+            else {
+                sb.Append(this.IsKeyRelease ? " (Release)" : " (Press)");
+            }
+
             return sb.ToString();
         }
     }

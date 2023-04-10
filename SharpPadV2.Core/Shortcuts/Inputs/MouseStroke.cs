@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace SharpPadV2.Core.Shortcuts.Inputs {
+namespace REghZy.Hotkeys.Shortcuts.Inputs {
     public readonly struct MouseStroke : IInputStroke, IEquatable<MouseStroke> {
         /// <summary>
         /// A non-null function for converting a mouse button into a string representation
@@ -88,15 +88,22 @@ namespace SharpPadV2.Core.Shortcuts.Inputs {
         }
 
         public override string ToString() {
+            return this.ToString(true, true, true);
+        }
+
+        public string ToString(bool appendClickCount, bool appendDelta, bool useSpacers) {
             StringBuilder sb = new StringBuilder();
             string mod = ModifierToStringProvider(this.Modifiers);
             if (mod.Length > 0) {
-                sb.Append(mod).Append(' ');
+                sb.Append(mod).Append(useSpacers ? " + " : "+");
             }
 
-            sb.Append(MouseButtonToStringProvider(this.MouseButton)).Append(' ');
-            sb.Append("(x").Append(this.ClickCount).Append(')');
-            if (this.WheelDelta != 0) {
+            sb.Append(MouseButtonToStringProvider(this.MouseButton));
+            if (appendClickCount) {
+                sb.Append(" (x").Append(this.ClickCount).Append(')');
+            }
+
+            if (appendDelta && this.WheelDelta != 0) {
                 sb.Append(" (ROT ").Append(this.WheelDelta).Append(')');
             }
 

@@ -18,13 +18,13 @@ namespace SharpPadV2.Shortcuts.Bindings {
     /// input bindings do not have an "added/removed from visual tree" event
     /// </para>
     /// </summary>
-    public class GlobalShortcutCommandBinding : InputBinding {
+    public class ShortcutCommandBinding : InputBinding {
         public static readonly DependencyProperty ShortcutAndUsageIdProperty =
             DependencyProperty.Register(
                 "ShortcutAndUsageId",
                 typeof(string),
-                typeof(GlobalShortcutCommandBinding),
-                new PropertyMetadata(null, (d, e) => ((GlobalShortcutCommandBinding) d).OnShouldcutAndUsageIdChanged((string) e.OldValue, (string) e.NewValue)));
+                typeof(ShortcutCommandBinding),
+                new PropertyMetadata(null, (d, e) => ((ShortcutCommandBinding) d).OnShouldcutAndUsageIdChanged((string) e.OldValue, (string) e.NewValue)));
 
         /// <summary>
         /// <para>
@@ -60,7 +60,7 @@ namespace SharpPadV2.Shortcuts.Bindings {
 
         private readonly ShortcutActivateHandler fireShortcutHandler;
 
-        public GlobalShortcutCommandBinding() {
+        public ShortcutCommandBinding() {
             this.fireShortcutHandler = this.OnShortcutFired;
         }
 
@@ -94,6 +94,6 @@ namespace SharpPadV2.Shortcuts.Bindings {
             }
         }
 
-        protected override Freezable CreateInstanceCore() => new GlobalShortcutCommandBinding();
+        protected override Freezable CreateInstanceCore() => new ShortcutCommandBinding();
     }
 }
